@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,28 +13,27 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Capabilities for category access plugin.
- *
- * @package    enrol
- * @subpackage category
- * @copyright  2010 Petr Skoda {@link http://skodak.org}
+ * @package    backup-convert
+ * @subpackage cc-library
+ * @copyright  2012 Darko Miletic <dmiletic@moodlerooms.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once 'cc_converters.php';
+require_once 'cc_general.php';
 
-$capabilities = array(
-    // marks roles that have category role assignments synchronised to course enrolments
-    // overrides below system context are ignored (for performance reasons).
-    // by default his is not allowed in new installs, admins have to explicitly allow category enrolments
-    'enrol/category:synchronised' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => array(
-        )
-    ),
-);
+class cc_converter_label extends cc_converter {
 
+    public function __construct(cc_i_item &$item, cc_i_manifest &$manifest, $rootpath, $path){
+        $this->defaultfile = 'label.xml';
+        parent::__construct($item, $manifest, $rootpath, $path);
+    }
 
+    public function convert($outdir) {
+        $resitem = new cc_item();
+        $resitem->title = $this->doc->nodeValue('/activity/label/name');
+        $this->item->add_child_item($resitem);
+        return true;
+    }
+}

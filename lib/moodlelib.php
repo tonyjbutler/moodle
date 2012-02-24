@@ -7498,7 +7498,6 @@ function get_core_subsystems() {
             'license'     => NULL,
             'mathslib'    => NULL,
             'message'     => 'message',
-            'message'     => 'message',
             'mimetypes'   => NULL,
             'mnet'        => 'mnet',
             'moodle.org'  => NULL, // the dot is nasty, watch out! should be renamed to moodleorg
@@ -7833,7 +7832,7 @@ function plugin_callback($type, $name, $feature, $action, $params = null, $defau
  * @return mixed
  */
 function component_callback($component, $function, array $params = array(), $default = null) {
-    global $CFG; // this is needed for require_once() bellow
+    global $CFG; // this is needed for require_once() below
 
     $cleancomponent = clean_param($component, PARAM_COMPONENT);
     if (empty($cleancomponent)) {
