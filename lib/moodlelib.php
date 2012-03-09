@@ -3807,6 +3807,9 @@ function delete_user($user) {
     $updateuser->timemodified = time();
 
     $DB->update_record('user', $updateuser);
+    // Add this action to log
+    add_to_log(SITEID, 'user', 'delete', "view.php?id=$user->id", $user->firstname.' '.$user->lastname);
+
 
     // We will update the user's timemodified, as it will be passed to the user_deleted event, which
     // should know about this updated property persisted to the user's table.
@@ -7264,12 +7267,17 @@ class emoticon_manager {
  *
  * @todo Finish documenting this function
  *
- * @param string $data Data to encrypt
- * @return string The now encrypted data
+ * @param string $data        Data to encrypt.
+ * @param bool $usesecurekey  Lets us know if we are using the old or new password.
+ * @return string             The now encrypted data.
  */
-function rc4encrypt($data) {
-    $password = get_site_identifier();
-    return endecrypt($password, $data, '');
+function rc4encrypt($data, $usesecurekey = false) {
+    if (!$usesecurekey) {
+        $passwordkey = 'nfgjeingjk';
+    } else {
+        $passwordkey = get_site_identifier();
+    }
+    return endecrypt($passwordkey, $data, '');
 }
 
 /**
@@ -7277,12 +7285,17 @@ function rc4encrypt($data) {
  *
  * @todo Finish documenting this function
  *
- * @param string $data Data to decrypt
- * @return string The now decrypted data
+ * @param string $data        Data to decrypt.
+ * @param bool $usesecurekey  Lets us know if we are using the old or new password.
+ * @return string             The now decrypted data.
  */
-function rc4decrypt($data) {
-    $password = get_site_identifier();
-    return endecrypt($password, $data, 'de');
+function rc4decrypt($data, $usesecurekey = false) {
+    if (!$usesecurekey) {
+        $passwordkey = 'nfgjeingjk';
+    } else {
+        $passwordkey = get_site_identifier();
+    }
+    return endecrypt($passwordkey, $data, 'de');
 }
 
 /**
