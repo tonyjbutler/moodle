@@ -25,13 +25,3 @@ CVS
 /.project
 /.buildpath
 /.cache
-#
-/blocks/course_contents/
-/blocks/dndupload/
-/blocks/ebs_agent/
-/mod/book/
-/mod/certificate/
-/mod/lightboxgallery/
-/mod/nln/
-/mod/questionnaire/
-/plagiarism/turnitin/
