@@ -133,6 +133,14 @@ define('PARAM_FILE',   'file');
 
 /**
  * PARAM_FLOAT - a real/floating point number.
+ *
+ * Note that you should not use PARAM_FLOAT for numbers typed in by the user.
+ * It does not work for languages that use , as a decimal separator.
+ * Instead, do something like
+ *     $rawvalue = required_param('name', PARAM_RAW);
+ *     // ... other code including require_login, which sets current lang ...
+ *     $realvalue = unformat_float($rawvalue);
+ *     // ... then use $realvalue
  */
 define('PARAM_FLOAT',  'float');
 
@@ -1127,7 +1135,44 @@ function fix_utf8($value) {
             // shortcut
             return $value;
         }
-        return iconv('UTF-8', 'UTF-8//IGNORE', $value);
+
+        // Note: This is a partial backport of MDL-32586 and MDL-33007 to stable branches.
+        // Lower error reporting because glibc throws bogus notices.
+        $olderror = error_reporting();
+        if ($olderror & E_NOTICE) {
+            error_reporting($olderror ^ E_NOTICE);
+        }
+
+        // Detect buggy iconv implementations borking results.
+        static $buggyiconv = null;
+        if ($buggyiconv === null) {
+            $buggyiconv = (!function_exists('iconv') or iconv('UTF-8', 'UTF-8//IGNORE', '100'.chr(130).'€') !== '100€');
+        }
+
+        if ($buggyiconv) {
+            if (function_exists('mb_convert_encoding')) {
+                // Fallback to mbstring if available.
+                $subst = mb_substitute_character();
+                mb_substitute_character('');
+                $result = mb_convert_encoding($value, 'utf-8', 'utf-8');
+                mb_substitute_character($subst);
+
+            } else {
+                // Return unmodified text, mbstring not available.
+                $result = $value;
+            }
+
+        } else {
+            // Working iconv, use it normally (with PHP notices disabled)
+            $result = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+        }
+
+        // Back to original reporting level
+        if ($olderror & E_NOTICE) {
+            error_reporting($olderror);
+        }
+
+        return $result;
 
     } else if (is_array($value)) {
         foreach ($value as $k=>$v) {
