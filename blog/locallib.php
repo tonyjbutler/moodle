@@ -309,7 +309,7 @@ class blog_entry {
         $contentcell->text .= $OUTPUT->container_end();
 
         if (isset($template['lastmod']) ){
-            $contentcell->text .= '<div style="font-size: 55%;">';
+            $contentcell->text .= '<div style="font-size: 75%;">';
             $contentcell->text .= ' [ '.get_string('modified').': '.$template['lastmod'].' ]';
             $contentcell->text .= '</div>';
         }
