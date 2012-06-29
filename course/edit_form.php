@@ -85,7 +85,7 @@ class course_edit_form extends moodleform {
             $mform->setConstant('fullname', $course->fullname);
         }
 
-        $mform->addElement('text', 'shortname', get_string('shortnamecourse'), 'maxlength="100" size="20"');
+        $mform->addElement('text', 'shortname', get_string('shortnamecourse'), 'maxlength="20" size="20"');
         $mform->addHelpButton('shortname', 'shortnamecourse');
         $mform->addRule('shortname', get_string('missingshortname'), 'required', null, 'client');
         $mform->setType('shortname', PARAM_MULTILANG);
@@ -94,14 +94,15 @@ class course_edit_form extends moodleform {
             $mform->setConstant('shortname', $course->shortname);
         }
 
-        $mform->addElement('text','idnumber', get_string('idnumbercourse'),'maxlength="100"  size="10"');
-        $mform->addHelpButton('idnumber', 'idnumbercourse');
-        $mform->setType('idnumber', PARAM_RAW);
-        if (!empty($course->id) and !has_capability('moodle/course:changeidnumber', $coursecontext)) {
-            $mform->hardFreeze('idnumber');
-            $mform->setConstants('idnumber', $course->idnumber);
+        if (has_capability('moodle/site:config', $systemcontext)) {
+            $mform->addElement('text','idnumber', get_string('idnumbercourse'),'maxlength="100"  size="15"');
+            $mform->addHelpButton('idnumber', 'idnumbercourse');
+            $mform->setType('idnumber', PARAM_RAW);
+            if (!empty($course->id) and !has_capability('moodle/course:changeidnumber', $coursecontext)) {
+                $mform->hardFreeze('idnumber');
+                $mform->setConstants('idnumber', $course->idnumber);
+            }
         }
-
 
         $mform->addElement('editor','summary_editor', get_string('coursesummary'), null, $editoroptions);
         $mform->addHelpButton('summary_editor', 'coursesummary');
@@ -150,25 +151,27 @@ class course_edit_form extends moodleform {
         $mform->addHelpButton('showreports', 'showreports');
         $mform->setDefault('showreports', $courseconfig->showreports);
 
-        $choices = get_max_upload_sizes($CFG->maxbytes);
-        $mform->addElement('select', 'maxbytes', get_string('maximumupload'), $choices);
-        $mform->addHelpButton('maxbytes', 'maximumupload');
-        $mform->setDefault('maxbytes', $courseconfig->maxbytes);
+        if (has_capability('moodle/site:config', $systemcontext)) {
+            $choices = get_max_upload_sizes($CFG->maxbytes);
+            $mform->addElement('select', 'maxbytes', get_string('maximumupload'), $choices);
+            $mform->addHelpButton('maxbytes', 'maximumupload');
+            $mform->setDefault('maxbytes', $courseconfig->maxbytes);
 
-        if (!empty($course->legacyfiles) or !empty($CFG->legacyfilesinnewcourses)) {
-            if (empty($course->legacyfiles)) {
-                //0 or missing means no legacy files ever used in this course - new course or nobody turned on legacy files yet
-                $choices = array('0'=>get_string('no'), '2'=>get_string('yes'));
-            } else {
-                $choices = array('1'=>get_string('no'), '2'=>get_string('yes'));
+            if (!empty($course->legacyfiles) or !empty($CFG->legacyfilesinnewcourses)) {
+                if (empty($course->legacyfiles)) {
+                    //0 or missing means no legacy files ever used in this course - new course or nobody turned on legacy files yet
+                    $choices = array('0'=>get_string('no'), '2'=>get_string('yes'));
+                } else {
+                    $choices = array('1'=>get_string('no'), '2'=>get_string('yes'));
+                }
+                $mform->addElement('select', 'legacyfiles', get_string('courselegacyfiles'), $choices);
+                $mform->addHelpButton('legacyfiles', 'courselegacyfiles');
+                if (!isset($courseconfig->legacyfiles)) {
+                    // in case this was not initialised properly due to switching of $CFG->legacyfilesinnewcourses
+                    $courseconfig->legacyfiles = 0;
+                }
+                $mform->setDefault('legacyfiles', $courseconfig->legacyfiles);
             }
-            $mform->addElement('select', 'legacyfiles', get_string('courselegacyfiles'), $choices);
-            $mform->addHelpButton('legacyfiles', 'courselegacyfiles');
-            if (!isset($courseconfig->legacyfiles)) {
-                // in case this was not initialised properly due to switching of $CFG->legacyfilesinnewcourses
-                $courseconfig->legacyfiles = 0;
-            }
-            $mform->setDefault('legacyfiles', $courseconfig->legacyfiles);
         }
 
         if (!empty($CFG->allowcoursethemes)) {
@@ -357,6 +360,19 @@ class course_edit_form extends moodleform {
                 }
                 $foundcoursenamestring = implode(',', $foundcoursenames);
                 $errors['shortname']= get_string('shortnametaken', '', $foundcoursenamestring);
+            }
+        }
+
+        if ($foundcoursecodes = $DB->get_records('course', array('idnumber'=>$data['idnumber'])) and !empty($data['idnumber'])) {
+            if (!empty($data['id'])) {
+                unset($foundcoursecodes[$data['id']]);
+            }
+            if (!empty($foundcoursecodes)) {
+                foreach ($foundcoursecodes as $foundcoursecode) {
+                    $foundcoursecodenames[] = $foundcoursecode->fullname;
+                }
+                $foundcoursecodenamestring = implode(',', $foundcoursecodenames);
+                $errors['idnumber'] = get_string('idnumbercoursetaken', '', $foundcoursecodenamestring);
             }
         }
 
