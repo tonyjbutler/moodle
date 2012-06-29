@@ -852,6 +852,7 @@ function print_overview($courses, array $remote_courses=array()) {
     foreach ($courses as $course) {
         $fullname = format_string($course->fullname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
         echo $OUTPUT->box_start('coursebox');
+        echo '<a class="skip" href="#course-'.$course->id.'-end">Skip '.format_string($course->fullname).'</a>';
         $attributes = array('title' => s($fullname));
         if (empty($course->visible)) {
             $attributes['class'] = 'dimmed';
@@ -863,6 +864,7 @@ function print_overview($courses, array $remote_courses=array()) {
                 echo $html;
             }
         }
+        echo '<div id="course-'.$course->id.'-end"></div>';
         echo $OUTPUT->box_end();
     }
 
