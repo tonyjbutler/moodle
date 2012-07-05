@@ -97,10 +97,30 @@ function xmldb_enrol_database_install() {
 
     unset_config('enrol_db_disableunenrol');
 
-
-
-
-
+    if (isset($CFG->enrol_db_coursetable)) {
+        set_config('newcoursetable', $CFG->enrol_db_coursetable, 'enrol_database');
+        unset_config('enrol_db_coursetable');
+    }
+    if (isset($CFG->enrol_db_fullnamefield)) {
+        set_config('newcoursefullname', $CFG->enrol_db_fullnamefield, 'enrol_database');
+        unset_config('enrol_db_fullnamefield');
+    }
+    if (isset($CFG->enrol_db_shortnamefield)) {
+        set_config('newcourseshortname', $CFG->enrol_db_shortnamefield, 'enrol_database');
+        unset_config('enrol_db_shortnamefield');
+    }
+    if (isset($CFG->enrol_db_courseidfield)) {
+        set_config('newcourseidnumber', $CFG->enrol_db_courseidfield, 'enrol_database');
+        unset_config('enrol_db_courseidfield');
+    }
+    if (isset($CFG->enrol_db_summaryfield)) {
+        set_config('newcoursesummary', $CFG->enrol_db_summaryfield, 'enrol_database');
+        unset_config('enrol_db_summaryfield');
+    }
+    if (isset($CFG->enrol_db_startdatefield)) {
+        set_config('newcoursestartdate', $CFG->enrol_db_startdatefield, 'enrol_database');
+        unset_config('enrol_db_startdatefield');
+    }
 
     // just make sure there are no leftovers after disabled plugin
     if (!$DB->record_exists('enrol', array('enrol'=>'database'))) {
