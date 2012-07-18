@@ -8451,6 +8451,8 @@ function get_browser_version_classes() {
 
         } else if (check_browser_version("WebKit Android")) {
             $classes[] = 'android';
+        } else if (check_browser_operating_system("Linux")) {
+            $classes[] = 'linux';
         }
 
     } else if (check_browser_version("Opera")) {
