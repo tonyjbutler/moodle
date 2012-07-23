@@ -105,6 +105,10 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configtext('enrol_database/newcourseidnumber', get_string('newcourseidnumber', 'enrol_database'), '', 'idnumber'));
 
+    $settings->add(new admin_setting_configtext('enrol_database/newcoursesummary', get_string('newcoursesummary', 'enrol_database'), '', 'summary'));
+
+    $settings->add(new admin_setting_configtext('enrol_database/newcoursestartdate', get_string('newcoursestartdate', 'enrol_database'), '', 'startdate'));
+
     $settings->add(new admin_setting_configtext('enrol_database/newcoursecategory', get_string('newcoursecategory', 'enrol_database'), '', ''));
 
     if (!during_initial_install()) {

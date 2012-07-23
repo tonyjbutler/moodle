@@ -584,6 +584,8 @@ class enrol_database_plugin extends enrol_plugin {
         $fullname  = strtolower($this->get_config('newcoursefullname'));
         $shortname = strtolower($this->get_config('newcourseshortname'));
         $idnumber  = strtolower($this->get_config('newcourseidnumber'));
+        $summary   = strtolower($this->get_config('newcoursesummary'));
+        $startdate = strtolower($this->get_config('newcoursestartdate'));
         $category  = strtolower($this->get_config('newcoursecategory'));
 
         $sqlfields = array($fullname, $shortname);
@@ -592,6 +594,12 @@ class enrol_database_plugin extends enrol_plugin {
         }
         if ($idnumber) {
             $sqlfields[] = $idnumber;
+        }
+        if ($summary) {
+            $sqlfields[] = $summary;
+        }
+        if ($startdate) {
+            $sqlfields[] = $startdate;
         }
         $sql = $this->db_get_sql($table, array(), $sqlfields);
         $createcourses = array();
@@ -627,6 +635,8 @@ class enrol_database_plugin extends enrol_plugin {
                     $course->fullname  = $fields[$fullname];
                     $course->shortname = $fields[$shortname];
                     $course->idnumber  = $idnumber ? $fields[$idnumber] : NULL;
+                    $course->summary   = $summary ? $fields[$summary] : NULL;
+                    $course->startdate = $startdate ? $fields[$startdate] : NULL;
                     $course->category  = $category ? $fields[$category] : NULL;
                     $createcourses[] = $course;
                 }
@@ -688,6 +698,8 @@ class enrol_database_plugin extends enrol_plugin {
                 $newcourse->fullname  = $fields->fullname;
                 $newcourse->shortname = $fields->shortname;
                 $newcourse->idnumber  = $fields->idnumber;
+                $newcourse->summary   = $fields->summary ? $fields->summary : $template->summary;
+                $newcourse->startdate = $fields->startdate ? $fields->startdate : $template->startdate;
                 $newcourse->category  = $fields->category ? $fields->category : $defaultcategory;
 
                 // Detect duplicate data once again, above we can not find duplicates
@@ -705,7 +717,7 @@ class enrol_database_plugin extends enrol_plugin {
                 }
                 $c = create_course($newcourse);
                 if ($verbose) {
-                    mtrace("  creating course: $c->id, $c->fullname, $c->shortname, $c->idnumber, $c->category");
+                    mtrace("  creating course: $c->id, $c->fullname, $c->shortname, $c->idnumber, $c->summary, $c->startdate, $c->category");
                 }
             }
 
