@@ -2192,14 +2192,17 @@ function make_categories_options() {
  * By default this is just $course->fullname but user can configure it. The
  * result of this function should be passed through print_string.
  * @param object $course Moodle course object
+ * @param bool $editingon Is editing turned on?
  * @return string Display name of course (either fullname or short + fullname)
  */
-function get_course_display_name_for_list($course) {
+function get_course_display_name_for_list($course, $editingon=false) {
     global $CFG;
-    if (!empty($CFG->courselistshortnames)) {
-        return $course->shortname . ' ' .$course->fullname;
+    $fullname = $course->fullname;
+    $shortname = $course->shortname;
+    if (!empty($CFG->courselistshortnames) || $editingon) {
+        return $fullname . ' [' . $shortname . ']';
     } else {
-        return $course->fullname;
+        return $fullname;
     }
 }
 

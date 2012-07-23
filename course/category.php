@@ -338,7 +338,7 @@ if (!$courses) {
 
         $linkcss = $acourse->visible ? '' : ' class="dimmed" ';
         echo '<tr>';
-        $coursename = get_course_display_name_for_list($acourse);
+        $coursename = get_course_display_name_for_list($acourse, $editingon);
         echo '<td><a '.$linkcss.' href="view.php?id='.$acourse->id.'">'. format_string($coursename) .'</a></td>';
         if ($editingon) {
             echo '<td>';
