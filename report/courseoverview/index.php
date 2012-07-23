@@ -128,7 +128,7 @@ if (!empty($report) && !empty($time)) {
 
         foreach  ($courses as $c) {
             $a = array();
-            $a[] = '<a href="'.$CFG->wwwroot.'/course/view.php?id='.$c->courseid.'">'.$DB->get_field('course', 'shortname', array('id'=>$c->courseid)).'</a>';
+            $a[] = '<a href="'.$CFG->wwwroot.'/course/view.php?id='.$c->courseid.'">'.$DB->get_field('course', 'fullname', array('id'=>$c->courseid)).'</a>';
 
             $a[] = $c->line1;
             if (isset($c->line2)) {
