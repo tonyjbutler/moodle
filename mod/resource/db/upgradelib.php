@@ -221,7 +221,7 @@ function resource_20_prepare_migration() {
     $table->add_field('course', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
     $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
     $table->add_field('type', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, null);
-    $table->add_field('reference', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+    $table->add_field('reference', XMLDB_TYPE_CHAR, '2083', null, XMLDB_NOTNULL, null, null);
     $table->add_field('intro', XMLDB_TYPE_TEXT, 'small', null, null, null, null);
     $table->add_field('introformat', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
     $table->add_field('alltext', XMLDB_TYPE_TEXT, 'medium', null, XMLDB_NOTNULL, null, null);
