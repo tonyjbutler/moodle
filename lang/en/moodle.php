@@ -843,8 +843,12 @@ $string['chooseuser'] = 'Choose a user';
 $string['icqnumber'] = 'ICQ number';
 $string['icon'] = 'Icon';
 $string['idnumber'] = 'ID number';
-$string['idnumbercourse'] = 'Course ID number';
-$string['idnumbercourse_help'] = 'The ID number of a course is only used when matching the course against external systems and is not displayed anywhere on the site. If the course has an official code name it may be entered, otherwise the field can be left blank.';
+$string['idnumbercourse'] = 'EBS course code';
+$string['idnumbercourse_help'] = '<p>Enter the combined EBS Unit Instance (UI) and Occurrence code here in the format UI_YY/YY, e.g. AB1FE01_06/07.</p>
+<p>This field can only contain a single UIO code, and it must be unique (although it can be left empty, e.g. for meta-parent courses).</p>
+<p>If a course needs to be mapped against more than one UIO, create a meta-child course for each code and import them all into a single meta-parent course.</p>
+<p>Conversely, if several courses needs to be mapped against the same UIO, create one meta-child course (mapped against the single code) and import it into several meta-parent courses.</p>';
+$string['idnumbercoursetaken'] = 'EBS code is already used for another course ({$a})';
 $string['idnumbermod'] = 'ID number';
 $string['idnumbermod_help'] = 'Setting an ID number provides a way of identifying the activity for grade calculation purposes. If the activity is not included in any grade calculation then the ID number field may be left blank.
 

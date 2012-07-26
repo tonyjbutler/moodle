@@ -3899,6 +3899,101 @@ function delete_user($user) {
 }
 
 /**
+ * Partially reversible variation of delete_user(), triggered by the
+ * Moodle IDM driver flagging user as deleted in internal user table.
+ * Marks user as suspended by IDM using suspended_idm field in user
+ * table, resets user's policyagreed flag and notifies the auth plugin.
+ * Also unenrols user from all roles and does other cleanup.
+ * User can be revived later by IDM driver clearing deleted flag.
+ *
+ * Any plugin that needs to purge user data should register the 'user_deleted' event.
+ *
+ * @param stdClass $user full user object before suspend
+ * @return boolean always true
+ */
+function suspend_idm_user($user) {
+    global $CFG, $DB;
+    require_once($CFG->libdir.'/grouplib.php');
+    require_once($CFG->libdir.'/gradelib.php');
+    require_once($CFG->dirroot.'/message/lib.php');
+    require_once($CFG->dirroot.'/tag/lib.php');
+
+    // delete all grades - backup is kept in grade_grades_history table
+    grade_user_delete($user->id);
+
+    //move unread messages from this user to read
+    message_move_userfrom_unread2read($user->id);
+
+    // TODO: remove from cohorts using standard API here
+
+    // remove user tags
+    tag_set('user', $user->id, array());
+
+    // unconditionally unenrol from all courses
+    enrol_user_delete($user);
+
+    // unenrol from all roles in all contexts
+    role_unassign_all(array('userid'=>$user->id)); // this might be slow but it is really needed - modules might do some extra cleanup!
+
+    //now do a brute force cleanup
+
+    // remove from all cohorts
+    $DB->delete_records('cohort_members', array('userid'=>$user->id));
+
+    // remove from all groups
+    $DB->delete_records('groups_members', array('userid'=>$user->id));
+
+    // brute force unenrol from all courses
+    $DB->delete_records('user_enrolments', array('userid'=>$user->id));
+
+    // purge user preferences
+    $DB->delete_records('user_preferences', array('userid'=>$user->id));
+
+    // purge user extra profile info
+    $DB->delete_records('user_info_data', array('userid'=>$user->id));
+
+    // last course access not necessary either
+    $DB->delete_records('user_lastaccess', array('userid'=>$user->id));
+
+    // remove all user tokens
+    $DB->delete_records('external_tokens', array('userid'=>$user->id));
+
+    // unauthorise the user for all services
+    $DB->delete_records('external_services_users', array('userid'=>$user->id));
+
+    // force logout - may fail if file based sessions used, sorry
+    session_kill_user($user->id);
+
+    // now do a final accesslib cleanup - removes all role assignments in user context and context itself
+    delete_context(CONTEXT_USER, $user->id);
+
+    // mark internal user record as "suspended_idm"
+    $updateuser = new stdClass();
+    $updateuser->id            = $user->id;
+    $updateuser->policyagreed  = 0;
+    $updateuser->suspended_idm = 1;
+    $updateuser->timemodified  = time();
+
+    $DB->update_record('user', $updateuser);
+    // Add this action to log
+    add_to_log(SITEID, 'user', 'suspend_idm', "view.php?id=$user->id", $user->firstname.' '.$user->lastname);
+
+
+    // We will update the user's timemodified, as it will be passed to the user_deleted event, which
+    // should know about this updated property persisted to the user's table.
+    $user->timemodified = $updateuser->timemodified;
+
+    // notify auth plugin - do not block the delete even when plugin fails
+    $authplugin = get_auth_plugin($user->auth);
+    $authplugin->user_delete($user);
+
+    // any plugin that needs to cleanup should register this event
+    events_trigger('user_deleted', $user);
+
+    return true;
+}
+
+/**
  * Retrieve the guest user object
  *
  * @global object

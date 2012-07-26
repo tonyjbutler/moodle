@@ -226,6 +226,76 @@ function cron_run() {
         $newusers->close();
     }
 
+    // Sync users for IDM
+    mtrace("Synchronising LDAP users for IDM...");
+
+    // Suspend LDAP users flagged in user table as deleted by IDM driver
+    $suspend_users = $DB->get_records_select('user', "auth = 'ldap' AND deleted = 1 AND username NOT LIKE '%.%'
+                                        AND idnumber NOT LIKE '' AND suspended_idm = 0", null, 'username ASC',
+                                        'id, username, firstname, lastname, auth');
+
+    if (!empty($suspend_users)) {
+        print "\tUser entries to suspend: ". count($suspend_users) . "\n";
+
+        foreach ($suspend_users as $user) {
+            if (suspend_idm_user($user)) {
+                echo "\t\t"; print_string('auth_dbsuspenduser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
+            } else {
+                echo "\t\t"; print_string('auth_dbsuspendusererror', 'auth_db', $user->username); echo "\n";
+            }
+        }
+    } else {
+        print "\tNo user entries to be suspended\n";
+    }
+
+    unset($suspend_users); // free mem!
+
+    // Revive suspended users with deleted flag cleared by IDM driver
+    $revive_users = $DB->get_records_select('user', "auth = 'ldap' AND deleted = 0 AND suspended_idm = 1", null,
+                                       'username ASC', 'id, username, firstname, lastname');
+
+    if (!empty($revive_users)) {
+        print "\tUser entries to be revived: ". count($revive_users) . "\n";
+
+        foreach ($revive_users as $user) {
+            $updateuser = new stdClass();
+            $updateuser->id            = $user->id;
+            $updateuser->suspended_idm = 0;
+            $updateuser->timemodified  = time();
+            if ($DB->update_record('user', $updateuser)) {
+                echo "\t\t"; print_string('auth_dbreviveduser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
+                // Add this action to log
+                add_to_log(SITEID, 'user', 'revive_idm', "view.php?id=$user->id", $user->firstname.' '.$user->lastname);
+            } else {
+                echo "\t\t"; print_string('auth_dbrevivedusererror', 'auth_db', $user->username); echo "\n";
+            }
+        }
+    } else {
+        print "\tNo user entries to be revived\n";
+    }
+
+    unset($revive_users);
+
+    // Ordinarily users should only be suspended but can be flagged for full deletion if required
+    $delete_users = $DB->get_records_select('user', "auth = 'ldap' AND deleted = 0 AND deleted_idm = 1", null,
+                                       'username ASC', 'id, username, email, firstname, lastname, auth');
+
+    if (!empty($delete_users)) {
+        print "\tUser entries to delete: ". count($delete_users) . "\n";
+
+        foreach ($delete_users as $user) {
+            if (delete_user($user)) {
+                echo "\t\t"; print_string('auth_dbdeleteuser', 'auth_db', array('name'=>$user->username, 'id'=>$user->id)); echo "\n";
+            } else {
+                echo "\t\t"; print_string('auth_dbdeleteusererror', 'auth_db', $user->username); echo "\n";
+            }
+        }
+    } else {
+        print "\tNo user entries to be deleted\n";
+    }
+
+    unset($delete_users);
+
 
     // It is very important to run enrol early
     // because other plugins depend on correct enrolment info.

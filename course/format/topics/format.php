@@ -92,7 +92,7 @@ if ($thissection->summary or $thissection->sequence or $PAGE->user_is_editing())
     // Note, no need for a 'left side' cell or DIV.
     // Note, 'right side' is BEFORE content.
     echo '<li id="section-0" class="section main clearfix" >';
-    echo '<div class="left side">&nbsp;</div>';
+    echo '<div class="left side"><a class="skip" href="#section-0-end">Skip section 0</a></div>';
     echo '<div class="right side" >&nbsp;</div>';
     echo '<div class="content">';
     if (!is_null($thissection->name)) {
@@ -121,6 +121,7 @@ if ($thissection->summary or $thissection->sequence or $PAGE->user_is_editing())
     }
 
     echo '</div>';
+    echo '<div id="section-0-end"></div>';
     echo "</li>\n";
 }
 
@@ -173,7 +174,7 @@ while ($section <= $course->numsections) {
 
         echo '<li id="section-'.$section.'" class="section main clearfix'.$sectionstyle.'" >'; //'<div class="left side">&nbsp;</div>';
 
-            echo '<div class="left side">'.$currenttext.$section.'</div>';
+        echo '<div class="left side"><a class="skip" href="#section-'.$section.'-end">Skip section '.$section.'</a>'.$currenttext.$section.'</div>';
         // Note, 'right side' is BEFORE content.
         echo '<div class="right side">';
 
@@ -246,6 +247,7 @@ while ($section <= $course->numsections) {
         }
 
         echo '</div>';
+        echo '<div id="section-'.$section.'-end"></div>';
         echo "</li>\n";
     }
 
