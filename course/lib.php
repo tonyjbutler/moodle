@@ -3218,8 +3218,8 @@ function make_editing_buttons(stdClass $mod, $absolute_ignored = true, $movesele
         );
     }
 
-    // Duplicate (require both target import caps to be able to duplicate, see modduplicate.php)
-    if (has_all_capabilities($dupecaps, $coursecontext)) {
+    // Duplicate (require both target import caps to be able to duplicate and backup2 support, see modduplicate.php)
+    if (has_all_capabilities($dupecaps, $coursecontext) && plugin_supports('mod', $mod->modname, FEATURE_BACKUP_MOODLE2)) {
         $actions[] = new action_link(
             new moodle_url($baseurl, array('duplicate' => $mod->id)),
             new pix_icon('t/copy', $str->duplicate, 'moodle', array('class' => 'iconsmall')),
@@ -3850,7 +3850,7 @@ function create_course($data, $editoroptions = NULL) {
     fix_course_sortorder();
 
     // update module restrictions
-    if ($course->restrictmodules) {
+    if ($course->restrictmodules || $CFG->restrictbydefault ) {
         if (isset($data->allowedmods)) {
             update_restricted_mods($course, $data->allowedmods);
         } else {
