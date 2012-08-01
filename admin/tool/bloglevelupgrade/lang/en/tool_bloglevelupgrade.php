@@ -22,7 +22,8 @@
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+ 
+$string['bloglevelupgrade'] = 'Blog visibility upgrade';
 $string['bloglevelupgradedescription'] = '<p>This site has recently been upgraded to Moodle 2.0.</p>
 <p>Blog visibility was simplified in 2.0, but your site still uses one of the old visibility types. </p>
 <p>To preserve the course-based or group-based visibility of the blog entries on your site, you need to run the following upgrade script, which will create a special "blog" type forum in each course whose enrolled users have posted blog entries, and will copy these blog entries in this special forum. </p>
