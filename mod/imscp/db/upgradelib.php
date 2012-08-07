@@ -82,7 +82,14 @@ function imscp_20_migrate() {
         }
 
         $context = get_context_instance(CONTEXT_MODULE, $candidate->cmid);
-        $root = "$CFG->dataroot/$candidate->course/$CFG->moddata/resource/$candidate->oldid";
+
+        // check if ims repository was used (must be in default location)
+        if (preg_match('/^#\//', $candidate->reference)) {
+            $refpath = substr($candidate->reference, 2);
+            $root = "$CFG->dirroot/ims_repository/$refpath";
+        } else {
+            $root = "$CFG->dataroot/$candidate->course/$CFG->moddata/resource/$candidate->oldid";
+        }
 
         // migrate package backup file
         if ($candidate->reference) {
