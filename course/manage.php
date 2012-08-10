@@ -485,7 +485,7 @@ if (!$courses) {
         $courseurl = new moodle_url('/course/view.php', array('id' => $acourse->id));
         $attributes = array();
         $attributes['class'] = $acourse->visible ? '' : 'dimmed';
-        $coursename = get_course_display_name_for_list($acourse);
+        $coursename = get_course_display_name_for_list($acourse, true);
         $coursename = format_string($coursename, true, array('context' => $coursecontext));
         $coursename = html_writer::link($courseurl, $coursename, $attributes);
 
