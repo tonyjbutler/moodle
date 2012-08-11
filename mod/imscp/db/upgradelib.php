@@ -139,7 +139,10 @@ function imscp_20_migrate() {
 
         // remove old moddata dir only if no error and manifest ok
         if (!$error and is_array($structure)) {
-            fulldelete($root);
+            // and only if not using ims repository (so no further instances possible)
+            if (!preg_match('/^#\//', $candidate->reference)) {
+                fulldelete($root);
+            }
         }
     }
     $candidates->close();
