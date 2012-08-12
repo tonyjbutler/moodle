@@ -210,8 +210,8 @@ if ($hasfooter) {
                     // the output of the function is not the classic nice moodle logo $this->pix_url('moodlelogo')
             ?>
                     <div class="sitelink">
-                        Powered by <a title="Moodle" href="http://moodle.org/">
-                            <img style="width:100px;height:30px" src="<?php echo $this->pix_url('moodlelogo') ?>" alt="Moodle logo" />
+                        <a title="Moodle" href="http://moodle.org/">
+                            <img style="width:100px;height:30px" src="<?php echo $this->pix_url('moodlelogo') ?>" alt="moodlelogo" />
                         </a>
                     </div>
             <?php
