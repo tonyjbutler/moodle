@@ -287,7 +287,7 @@ class assignment_upload extends assignment_base {
         $output = '';
 
         if ($this->drafts_tracked() and $this->isopen() and !$this->is_finalized($submission)) {
-            $output .= '<strong>'.get_string('draft', 'assignment').':</strong> ';
+            $output .= '<strong>'.get_string('draft', 'assignment').':</strong><br />';
         }
 
         if ($this->notes_allowed() and !empty($submission->data1)) {
