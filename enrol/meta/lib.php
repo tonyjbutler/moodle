@@ -46,7 +46,9 @@ class enrol_meta_plugin extends enrol_plugin {
             return get_string('pluginname', 'enrol_'.$enrol);
         } else if (empty($instance->name)) {
             $enrol = $this->get_name();
-            return get_string('pluginname', 'enrol_'.$enrol) . ' (' . format_string($DB->get_field('course', 'fullname', array('id'=>$instance->customint1))) . ')';
+            return get_string('pluginname', 'enrol_'.$enrol) . ':<br />' .
+                    format_string($DB->get_field('course', 'idnumber', array('id'=>$instance->customint1))) . ' (' .
+                    format_string($DB->get_field('course', 'fullname', array('id'=>$instance->customint1))) . ')';
         } else {
             return format_string($instance->name);
         }

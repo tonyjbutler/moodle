@@ -6,7 +6,10 @@
     }
     error_reporting(E_ALL);
 
-    require_once(dirname(dirname(dirname(__FILE__))).'/config.php'); // global moodle config file
+    define('CLI_SCRIPT', true);
+
+    require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php'); // global moodle config file
+    require_once("$CFG->dirroot/enrol/meta/locallib.php");
 
     $time = time();
     $log = fopen($CFG->dataroot.'/log/meta_update/update_'.$time.'.html','w');
@@ -17,13 +20,13 @@
     $password = $CFG->dbpass;
     $database = $CFG->dbname;
 
-    $link = mysqli_connect($server,$username,$password);
+    $link = mysqli_connect($server, $username, $password);
     if($link == false){
-        fwrite($log,"Unable to connect to server $server. Error: ".mysqli_error()."<br />");
+        fwrite($log,"Unable to connect to server $server. Error: ".mysqli_error($link)."<br />");
     }
-    $sel = mysqli_select_db($database,$link);
+    $sel = mysqli_select_db($link, $database);
     if($sel == false){
-        fwrite($log,"Unable to select database $database. Error: ".mysqli_error()."<br />");
+        fwrite($log,"Unable to select database $database. Error: ".mysqli_error($link)."<br />");
     }
 
     $starttime = userdate($time, '%H:%M:%S');
@@ -40,9 +43,9 @@
         $sql = "SELECT `mdl_course`.`idnumber`, `mdl_enrol`.`id` FROM `mdl_course`, `mdl_enrol`
                 WHERE (`mdl_course`.`id` = `mdl_enrol`.`customint1`) AND (`mdl_course`.`startdate` BETWEEN $date1 AND $date2)
                 AND (`mdl_course`.`idnumber` != '') AND (`mdl_enrol`.`enrol` = 'meta') AND (`mdl_enrol`.`timemodified` < $modified)";
-        $res = mysqli_query($sql,$link);
+        $res = mysqli_query($link, $sql);
         if($res == false){
-            fwrite($log,"Unable to run query $sql. Error: ".mysqli_error()."<br />");
+            fwrite($log,"Unable to run query $sql. Error: ".mysqli_error($link)."<br />");
         }
 
         while($rows = mysqli_fetch_array($res)){
@@ -73,15 +76,15 @@
             $new_code = $course_code.'_'.$new_occ;
 
             $sql = "SELECT `id`, `startdate` FROM `mdl_course` WHERE `idnumber` = '$new_code'";
-            $resource = mysqli_query($sql,$link);
+            $resource = mysqli_query($link, $sql);
             if($resource == false){
-                fwrite($log,"Unable to run query $sql. Error: ".mysqli_error()."<br />");
+                fwrite($log,"Unable to run query $sql. Error: ".mysqli_error($link)."<br />");
             }
-            else if(mysqli_stmt_num_rows($resource) == 0){
+            else if(mysqli_num_rows($resource) == 0){
                 $sql = "SELECT `mdl_course`.`id`, `mdl_course`.`shortname` FROM `mdl_course`, `mdl_enrol` WHERE (`mdl_course`.`id` = `mdl_enrol`.`courseid`) AND (`mdl_enrol`.`id` = $meta_id)";
-                $resource_parent = mysqli_query($sql,$link);
+                $resource_parent = mysqli_query($link, $sql);
                 if($resource_parent == false){
-                    fwrite($log,"Unable to run query $sql. Error: ".mysqli_error()."<br />");
+                    fwrite($log,"Unable to run query $sql. Error: ".mysqli_error($link)."<br />");
                 }
                 else{
                     $row_parent = mysqli_fetch_array($resource_parent);
@@ -98,15 +101,15 @@
                 $start_date = userdate($start_date, '%d/%m/%y');
 
                 $sql = "UPDATE `mdl_enrol` SET `customint1` = $child_course, `timemodified` = $time WHERE `mdl_enrol`.`id` = $meta_id";
-                $resource = mysqli_query($sql,$link);
+                $resource = mysqli_query($link, $sql);
                 if($resource == false){
-                    fwrite($log,"Unable to run query $sql. Error: ".mysqli_error()."<br />");
+                    fwrite($log,"Unable to run query $sql. Error: ".mysqli_error($link)."<br />");
                 }
                 else{
                     $sql = "SELECT `mdl_course`.`id`, `mdl_course`.`shortname` FROM `mdl_course`, `mdl_enrol` WHERE (`mdl_course`.`id` = `mdl_enrol`.`courseid`) AND (`mdl_enrol`.`id` = $meta_id)";
-                    $resource_parent = mysqli_query($sql,$link);
+                    $resource_parent = mysqli_query($link, $sql);
                     if($resource_parent == false){
-                        fwrite($log,"Unable to run query $sql. Error: ".mysqli_error()."<br />");
+                        fwrite($log,"Unable to run query $sql. Error: ".mysqli_error($link)."<br />");
                     }
                     else{
                         $row_parent = mysqli_fetch_array($resource_parent);
