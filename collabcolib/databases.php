@@ -20,15 +20,15 @@ if (!defined("COLLABCO_MOODLE"))
 					case "1.9":	
 					case "2.2":	
 					case "2.3":	
-						$databaseQuery = sprintf("SELECT D.id, D.course, D.name, D.intro, D.approval, D.timeavailablefrom, D.timeavailableto, CM.id as cmid 
-												  FROM mdl_data D, mdl_course_modules CM, mdl_modules M 
-												  WHERE D.course IN (%s) 
-												  AND D.timeavailablefrom < %s 
-												  AND M.name = '%s'
-												  AND M.visible = 1 
-												  AND CM.visible = 1 
-												  AND CM.instance = D.id
-												  AND CM.module = M.id",									  
+						$databaseQuery = sprintf("SELECT D.id, D.course, D.name, D.intro, D.approval, D.timeavailablefrom, D.timeavailableto, CM.id as cmid". 
+												 " FROM " . $moodleTablePrefix . "data D, " . $moodleTablePrefix . "course_modules CM, " . $moodleTablePrefix . "modules M".
+												 " WHERE D.course IN (%s)".
+												 " AND D.timeavailablefrom < %s".
+												 " AND M.name = '%s'".
+												 " AND M.visible = '1'".
+												 " AND CM.visible = '1'".
+												 " AND CM.instance = D.id".
+												 " AND CM.module = M.id",									  
 												  implode(",",$courseIDArray),
 												  time(),	
 												  "data"								  
@@ -38,6 +38,8 @@ if (!defined("COLLABCO_MOODLE"))
 						throw new exception ("There is no Database query for this version of Moodle. Please contact support");
 						break;
 				}
+				
+				$debugData["query_Database"] = makeSafeForOutput($databaseQuery);
 			
 				$databaseResult = mysql_query($databaseQuery, $connection);
 				
@@ -82,17 +84,19 @@ if (!defined("COLLABCO_MOODLE"))
 								case "1.9":
 								case "2.2":	
 								case "2.3":	
-									$databaseSubmissionsQuery = sprintf("SELECT id, timecreated, timemodified, approved 
-																		 FROM mdl_data_records 
-																		 WHERE dataid = %s 
-																		 AND userid = %s",
+									$databaseSubmissionsQuery = sprintf("SELECT id, timecreated, timemodified, approved". 
+																		 " FROM " . $moodleTablePrefix . "data_records". 
+																		 " WHERE dataid = '%s'". 
+																		 " AND userid = '%s'",
 																		 $databaseRow['id'], 
 																		 $userID); 
 									break;
 								default:
 									throw new exception ("There is no Database Submissions query for this version of Moodle. Please contact support");
 									break;
-							}						
+							}
+
+							$debugData["query_DatabaseSubmissions"] = makeSafeForOutput($databaseSubmissionsQuery);							
 							
 							$databaseSubmissionsResult = mysql_query($databaseSubmissionsQuery, $connection);
 							
@@ -140,17 +144,18 @@ if (!defined("COLLABCO_MOODLE"))
 								case "1.9":
 								case "2.2":	
 								case "2.3":	
-									$databaseSubmissionsQuery = sprintf("SELECT COUNT(*) AS num 
-																		 FROM mdl_data_records 
-																		 WHERE dataid = %s 
-																		 AND userid = %s",
+									$databaseSubmissionsQuery = sprintf("SELECT COUNT(*) AS num". 
+																		 " FROM " . $moodleTablePrefix . "data_records". 
+																		 " WHERE dataid = '%s'". 
+																		 " AND userid = '%s'",
 																		 $databaseRow['id'], 
 																		 $userID
 																		 ); 
-									$databaseApprovedQuery = sprintf("SELECT COUNT(*) AS num 
-																	  FROM mdl_data_records 
-																	  WHERE approved = 1 AND dataid = %s 
-																	  AND userid = %s",
+									$databaseApprovedQuery = sprintf("SELECT COUNT(*) AS num". 
+																	  " FROM " . $moodleTablePrefix . "data_records". 
+																	  " WHERE approved = '1'".
+																	  " AND dataid = '%s'". 
+																	  " AND userid = '%s'",
 																	  $databaseRow['id'], 
 																	  $userID
 																      );
@@ -159,6 +164,8 @@ if (!defined("COLLABCO_MOODLE"))
 									throw new exception ("There is no Database Submissions Count query for this version of Moodle. Please contact support");
 									break;
 							}
+							
+							$debugData["query_DatabaseSubmissions"] = makeSafeForOutput($databaseSubmissionsQuery);	
 							
 							$subs = mysql_fetch_assoc(mysql_query($databaseSubmissionsQuery));
 							$approved = mysql_fetch_assoc(mysql_query($databaseApprovedQuery));

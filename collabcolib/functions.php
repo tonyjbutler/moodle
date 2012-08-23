@@ -1,4 +1,10 @@
 <?php
+
+	if (!defined("COLLABCO_MOODLE"))
+	{
+		die();
+	}
+
 	define("COLLABCO_FUNCTIONS", "1.0.0");
 
 	function buildErrorMessage($errorToDisplay)
