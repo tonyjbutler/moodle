@@ -12,7 +12,8 @@
     require_once("$CFG->dirroot/enrol/meta/locallib.php");
 
     $time = time();
-    $log = fopen($CFG->dataroot.'/log/meta_update/update_'.$time.'.html','w');
+    $timeformatted = strftime('%Y%m%d-%H%M%S', $time);
+    $log = fopen($CFG->dataroot.'/log/meta_update/update_'.$timeformatted.'.html','w');
     fwrite($log,"<div id=\"page\"><div id=\"page-content\"><div class=\"generalbox\">");
 
     $server = $CFG->dbhost;
