@@ -20,14 +20,14 @@ if (!defined("COLLABCO_MOODLE"))
 					case "1.9":	
 					case "2.2":	
 					case "2.3":		
-						$quizQuery = sprintf("SELECT Q.id, Q.course, Q.name, Q.intro, Q.timeopen, Q.timeclose, CM.id as cmid 
-											  FROM mdl_quiz Q, mdl_course_modules CM, mdl_modules M 
-											  WHERE Q.course IN (%s) 
-											  AND M.name = '%s' 
-											  AND M.visible = 1 
-											  AND CM.visible = 1									  
-											  AND CM.instance = Q.id
-											  AND CM.module = M.id",								   									  
+						$quizQuery = sprintf("SELECT Q.id, Q.course, Q.name, Q.intro, Q.timeopen, Q.timeclose, CM.id as cmid".
+											  " FROM " . $moodleTablePrefix . "quiz Q, " . $moodleTablePrefix . "course_modules CM, " . $moodleTablePrefix . "modules M". 
+											  " WHERE Q.course IN (%s)". 
+											  " AND M.name = '%s'". 
+											  " AND M.visible = '1'". 
+											  " AND CM.visible = '1'".									  
+											  " AND CM.instance = Q.id".
+											  " AND CM.module = M.id",								   									  
 											  implode(",",$courseIDArray),
 											  "quiz"
 											  );
@@ -36,6 +36,8 @@ if (!defined("COLLABCO_MOODLE"))
 						throw new exception ("There is no Quiz query for this version of Moodle. Please contact support");
 						break;
 				}
+				
+				$debugData["query_Quiz"] = makeSafeForOutput($quizQuery);
 				
 				$quizResult = mysql_query($quizQuery, $connection);
 				
@@ -80,10 +82,10 @@ if (!defined("COLLABCO_MOODLE"))
 								case "1.9":	
 								case "2.2":	
 								case "2.3":							
-									$quizSubmissionsQuery = sprintf("SELECT id, attempt, timestart, timefinish, timemodified 
-																	 FROM mdl_quiz_attempts 
-																	 WHERE quiz = %s 
-																	 AND userid = %s",
+									$quizSubmissionsQuery = sprintf("SELECT id, attempt, timestart, timefinish, timemodified". 
+																	 " FROM " . $moodleTablePrefix . "quiz_attempts". 
+																	 " WHERE quiz = '%s'". 
+																	 " AND userid = '%s'",
 																	 $quizRow['id'], 
 																	 $userID
 																	 );
@@ -92,6 +94,8 @@ if (!defined("COLLABCO_MOODLE"))
 									throw new exception ("There is no Quiz Submissions query for this version of Moodle. Please contact support");
 									break;
 							}
+							
+							$debugData["query_QuizSubmissions"] = makeSafeForOutput($quizSubmissionsQuery);
 
 							$quizSubmissionsResult = mysql_query($quizSubmissionsQuery, $connection);
 							
@@ -131,10 +135,10 @@ if (!defined("COLLABCO_MOODLE"))
 								case "1.9":	
 								case "2.2":	
 								case "2.3":							
-									$quizSubmissionsQuery = sprintf("SELECT COUNT (*) AS num
-																	 FROM mdl_quiz_attempts 
-																	 WHERE quiz = %s 
-																	 AND userid = %s",
+									$quizSubmissionsQuery = sprintf("SELECT COUNT (*) AS num".
+																	 " FROM " . $moodleTablePrefix . "quiz_attempts". 
+																	 " WHERE quiz = '%s'". 
+																	 " AND userid = '%s'",
 																	 $quizRow['id'], 
 																	 $userID
 																	 );
@@ -143,6 +147,8 @@ if (!defined("COLLABCO_MOODLE"))
 									throw new exception ("There is no Quiz Submissions Count query for this version of Moodle. Please contact support");
 									break;
 							}
+							
+							$debugData["query_QuizSubmissions"] = makeSafeForOutput($quizSubmissionsQuery);
 							
 							$subs = mysql_query($quizSubmissionsQuery);
 							$row = mysql_fetch_assoc($subs);

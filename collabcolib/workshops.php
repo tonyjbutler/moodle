@@ -13,33 +13,34 @@ if (!defined("COLLABCO_MOODLE"))
 		{
 			try
 			{	
+				
 				$workshops = "<workshops>\n";
 				
 				switch($moodleVersion)
 				{
-					case "1.9":
-					case "2.2":	
-						$workshopQuery = sprintf("SELECT W.id, W.course, W.name, W.description, W.submissionstart, W.submissionend, CM.id as cmid 
-												  FROM mdl_workshop W, mdl_course_modules CM, mdl_modules M 
-												  WHERE W.course IN (%s) 
-												  AND M.name = '%s' 
-												  AND CM.visible = 1 
-												  AND M.visible = 1 
-												  AND CM.instance = W.id
-												  AND CM.module = M.id", 
+					case "1.9":						
+						$workshopQuery = sprintf("SELECT W.id, W.course, W.name, W.description, W.submissionstart, W.submissionend, CM.id as cmid". 
+												  " FROM " . $moodleTablePrefix . "workshop W, " . $moodleTablePrefix . "course_modules CM, " . $moodleTablePrefix . "modules M". 
+												  " WHERE W.course IN (%s)". 
+												  " AND M.name = '%s'". 
+												  " AND CM.visible = '1'". 
+												  " AND M.visible = '1'". 
+												  " AND CM.instance = W.id".
+												  " AND CM.module = M.id", 
 												  implode(",",$courseIDArray),
 												  "workshop"
 												);
 							break;
+					case "2.2":
 					case "2.3":		
-						$workshopQuery = sprintf("SELECT W.id, W.course, W.name, W.intro as description, W.submissionstart, W.submissionend, CM.id as cmid 
-												  FROM mdl_workshop W, mdl_course_modules CM, mdl_modules M 
-												  WHERE W.course IN (%s) 
-												  AND M.name = '%s' 
-												  AND CM.visible = 1 
-												  AND M.visible = 1 
-												  AND CM.instance = W.id
-												  AND CM.module = M.id", 
+						$workshopQuery = sprintf("SELECT W.id, W.course, W.name, W.intro as description, W.submissionstart, W.submissionend, CM.id as cmid".
+												  " FROM " . $moodleTablePrefix . "workshop W, " . $moodleTablePrefix . "course_modules CM, " . $moodleTablePrefix . "modules M". 
+												  " WHERE W.course IN (%s)". 
+												  " AND M.name = '%s'". 
+												  " AND CM.visible = '1'". 
+												  " AND M.visible = '1'". 
+												  " AND CM.instance = W.id".
+												  " AND CM.module = M.id", 
 												  implode(",",$courseIDArray),
 												  "workshop"
 												);
@@ -49,7 +50,10 @@ if (!defined("COLLABCO_MOODLE"))
 						break;
 				}
 				
+				$debugData["query_Workshop"] = makeSafeForOutput($workshopQuery);
+				
 				$workshopResult = mysql_query($workshopQuery, $connection);		
+				
 				
 				if ($workshopResult)
 				{
@@ -90,20 +94,20 @@ if (!defined("COLLABCO_MOODLE"))
 							switch($moodleVersion)
 							{
 								case "1.9":								
-									$workshopSubmissionsQuery = sprintf("SELECT id, timecreated, finalgrade, late 
-																		 FROM mdl_workshop_submissions 
-																		 WHERE workshopid = %s 
-																		 AND userid = %s",
+									$workshopSubmissionsQuery = sprintf("SELECT id, timecreated, finalgrade, late". 
+																		 " FROM " . $moodleTablePrefix . "workshop_submissions". 
+																		 " WHERE workshopid = '%s'". 
+																		 " AND userid = '%s'",
 																		 $workshopRow['id'], 
 																		 $userID
 																		 );
 									break;
 								case "2.3":
 								case "2.2":
-									$workshopSubmissionsQuery = sprintf("SELECT id, timecreated, grade as finalgrade, late 
-																		 FROM mdl_workshop_submissions 
-																		 WHERE workshopid = %s 
-																		 AND authorid = %s",
+									$workshopSubmissionsQuery = sprintf("SELECT id, timecreated, grade as finalgrade, late". 
+																		 " FROM " . $moodleTablePrefix . "workshop_submissions". 
+																		 " WHERE workshopid = '%s'". 
+																		 " AND authorid = '%s'",
 																		 $workshopRow['id'], 
 																		 $userID
 																		 );
@@ -112,7 +116,9 @@ if (!defined("COLLABCO_MOODLE"))
 								default:
 									throw new exception ("There is no Workshop Submissions query for this version of Moodle. Please contact support");
 									break;
-							}	
+							}
+							
+							$debugData["query_WorkshopSubmissions"] = makeSafeForOutput($workshopSubmissionsQuery);
 
 							$workshopSubmissionsResult = mysql_query($workshopSubmissionsQuery, $connection);
 							
@@ -150,20 +156,20 @@ if (!defined("COLLABCO_MOODLE"))
 							switch($moodleVersion)
 							{
 								case "1.9":								
-									$workshopSubmissionsQuery = sprintf("SELECT COUNT(*) AS num 
-																		 FROM mdl_workshop_submissions 
-																		 WHERE workshopid = %s 
-																		 AND userid = %s",
+									$workshopSubmissionsQuery = sprintf("SELECT COUNT(*) AS num". 
+																		 " FROM " . $moodleTablePrefix . "workshop_submissions". 
+																		 " WHERE workshopid = '%s'". 
+																		 " AND userid = '%s'",
 																		 $workshopRow['id'], 
 																		 $userID
 																		 );
 									break;
 								case "2.3":
 								case "2.2":
-									$workshopSubmissionsQuery = sprintf("SELECT COUNT(*) AS num 
-																		 FROM mdl_workshop_submissions 
-																		 WHERE workshopid = %s 
-																		 AND authorid = %s",
+									$workshopSubmissionsQuery = sprintf("SELECT COUNT(*) AS num". 
+																		 " FROM " . $moodleTablePrefix . "workshop_submissions". 
+																		 " WHERE workshopid = '%s'". 
+																		 " AND authorid = '%s'",
 																		 $workshopRow['id'], 
 																		 $userID);
 									break;
@@ -171,7 +177,9 @@ if (!defined("COLLABCO_MOODLE"))
 								default:
 									throw new exception ("There is no Workshop Submissions query for this version of Moodle. Please contact support");
 									break;
-							}						
+							}
+
+							$debugData["query_WorkshopSubmissions"] = makeSafeForOutput($workshopSubmissionsQuery);							
 
 							$subs = mysql_query($workshopSubmissionsQuery);
 							$row = mysql_fetch_assoc($subs);

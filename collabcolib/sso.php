@@ -8,6 +8,7 @@
 	function generateSSO($url, $username)
 	{
 		global $CFG;
+		global $moodleBaseURL;
 		
 		$secret = $CFG->passwordsaltmain;
 		
@@ -18,6 +19,6 @@
 			
 		$params = "?u=" . $username . "&t=" . $time . "&r=" . $url . "&h=" . $hash;
 		
-		return $CFG->wwwroot . "/login/index.php" . urlencode($params);			
+		return $moodleBaseURL . "/login/index.php" . urlencode($params);			
 	}
 ?>
