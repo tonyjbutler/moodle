@@ -1,0 +1,17 @@
+RewriteEngine on
+  #uncomment the following two lines to debug
+  #RewriteLog "/var/log/httpd/rewrite.log"
+  #RewriteLogLevel 9
+  
+  #pages@moodle
+  RewriteRule ^(moodle(/)?)?(survey|questionnaire)(/)?$ "/mod/questionnaire/view.php?id=96559" [L,NC,NE,R]
+  RewriteRule ^(mahara|(e)?portfolio(s)?)(/)?$ "/auth/mnet/jump.php?hostid=4" [L,NC,NE,R]
+  RewriteRule ^(mahara(/)?)?(cv|resume)(s)?(/)?$ "/auth/mnet/jump.php?hostid=4&wantsurl=artefact/resume/" [L,NC,NE,R]
+  RewriteRule ^(lrc(s)?|l(earning)?r(esources)?|(the)?loop|library)(/)?$ "/course/view.php?name=LRCs" [L,NC,NE,R]
+  RewriteRule ^((lrc(s)?|l(earning)?r(esources)?|(the)?loop|library)(/)?(online(resources)?|(online)?databases|e(-)?books)(/)?)|e(-)?books(/)?$ "/course/view.php?name=LRCs#section-2" [L,NC,NE,R]
+  RewriteRule ^(lrc(s)?|l(earning)?r(esources)?|(the)?loop|library)(/)?(survey|questionnaire)(/)?$ "/mod/questionnaire/view.php?id=92903" [L,NC,NE,R]
+  RewriteRule ^l(&)?t(c)?(/)?$ "/course/view.php?name=L\%26T\%20Home" [L,NC,NE,R]
+  RewriteRule ^s(tudent)?s(ervices)?(/)?$ "/course/view.php?name=Student\%20Services" [L,NC,NE,R]
+  RewriteRule ^((b)?su|(student(s)?)?union)(/)?$ "/course/view.php?name=BSU" [L,NC,NE,R]
+  RewriteRule ^((b)?su|(student(s)?)?union)(/)?(election(s)?|vote)(/)?$ "/mod/resource/view.php?id=95807" [L,NC,NE,R]
+  RewriteRule ^((applicant|taster)(s)?|welcome)(/)?$ "/course/view.php?name=Welcome" [L,NC,NE,R]
