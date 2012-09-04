@@ -2798,7 +2798,7 @@
         <KEY NAME="fk_usercreated" TYPE="foreign" FIELDS="usercreated" REFTABLE="user" REFFIELDS="id" PREVIOUS="uq_area_method"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="grading_instances" COMMENT="Grading form instance is an assessment record for one gradable item assessed by one rater" PREVIOUS="grading_definitions" NEXT="temp_log_template">
+    <TABLE NAME="grading_instances" COMMENT="Grading form instance is an assessment record for one gradable item assessed by one rater" PREVIOUS="grading_definitions" NEXT="temp_enroled_template">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="definitionid"/>
         <FIELD NAME="definitionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The ID of the form definition this is instance of" PREVIOUS="id" NEXT="raterid"/>
@@ -2816,7 +2816,23 @@
         <KEY NAME="fk_raterid" TYPE="foreign" FIELDS="raterid" REFTABLE="user" REFFIELDS="id" PREVIOUS="fk_definitionid"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="temp_log_template" COMMENT="Temporary storage for daily logs" PREVIOUS="grading_instances">
+    <TABLE NAME="temp_enroled_template" COMMENT="Temporary storage for course enrolments" PREVIOUS="grading_instances" NEXT="temp_log_template">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="roleid"/>
+        <FIELD NAME="roleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" PREVIOUS="courseid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" NEXT="courseid"/>
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" PREVIOUS="userid" NEXT="roleid"/>
+        <INDEX NAME="roleid" UNIQUE="false" FIELDS="roleid" PREVIOUS="courseid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="temp_log_template" COMMENT="Temporary storage for daily logs" PREVIOUS="temp_enroled_template">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="course"/>
