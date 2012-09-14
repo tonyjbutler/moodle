@@ -274,9 +274,9 @@ function resourcelib_embed_flashvideo($fullurl, $title, $clicktoopen) {
         $height   = $matches[2];
         $autosize = false;
     } else {
-        $width    = 400;
-        $height   = 300;
-        $autosize = true;
+        $width    = 720;
+        $height   = 540;
+        $autosize = false;
     }
     $output = '<div class="resourcecontent resourceflv">';
     $output .= html_writer::tag('span', $clicktoopen, array('id'=>$id, 'class'=>'resourcemediaplugin resourcemediaplugin_flv', 'title'=>$title));
