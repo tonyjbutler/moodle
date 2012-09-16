@@ -306,7 +306,7 @@ if (!isset($hiddenfields['mycourses'])) {
                 }
             }
             $shown++;
-            if ($shown >= 20) {
+            if ($shown >= 200) {
                 $courselisting .= "...";
                 break;
             }
