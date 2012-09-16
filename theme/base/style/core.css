@@ -179,6 +179,7 @@ a.skip:active {position: static;display: block;}
 #page-footer .logininfo,
 #page-footer .sitelink,
 #page-footer .helplink {margin:0px 10px;}
+#page-footer .sitelink img {vertical-align: middle;}
 #page-footer .performanceinfo {text-align:center;margin:10px 20%;}
 #page-footer .performanceinfo span {display:block;}
 #page-footer .validators {margin-top:40px;padding-top:5px;border-top: 1px dotted gray;}
