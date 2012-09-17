@@ -43,7 +43,7 @@
         $modified = $time - 7257600;                // but only if meta relationship not modified in last 12 weeks
         $sql = "SELECT `mdl_course`.`idnumber`, `mdl_enrol`.`id` FROM `mdl_course`, `mdl_enrol`
                 WHERE (`mdl_course`.`id` = `mdl_enrol`.`customint1`) AND (`mdl_course`.`startdate` BETWEEN $date1 AND $date2)
-                AND (`mdl_course`.`idnumber` != '') AND (`mdl_enrol`.`enrol` = 'meta') AND (`mdl_enrol`.`timemodified` < $modified)";
+                AND (`mdl_course`.`idnumber` LIKE '%_%/%') AND (`mdl_enrol`.`enrol` = 'meta') AND (`mdl_enrol`.`timemodified` < $modified)";
         $res = mysqli_query($link, $sql);
         if($res == false){
             fwrite($log,"Unable to run query $sql. Error: ".mysqli_error($link)."<br />");
