@@ -315,7 +315,7 @@ if (!isset($hiddenfields['mycourses'])) {
                 $courselisting .= "<a href=\"{$CFG->wwwroot}/user/view.php?id={$user->id}&amp;course={$mycourse->id}\" $class >" . format_string($mycourse->fullname) . "</a>, ";
             }
             $shown++;
-            if($shown==20) {
+            if($shown==200) {
                 $courselisting.= "...";
                 break;
             }
