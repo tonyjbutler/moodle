@@ -502,6 +502,12 @@ if (!$courses) {
             $icons[] = $OUTPUT->action_icon($url, new pix_icon('t/enrolusers', get_string('enrolledusers', 'enrol')));
         }
 
+        // Enrolment methods icon.
+        if (has_capability('moodle/course:enrolconfig', $coursecontext)) {
+            $url = new moodle_url('/enrol/instances.php', array('id' => $acourse->id));
+            $icons[] = $OUTPUT->action_icon($url, new pix_icon('t/cohort', get_string('enrolmentinstances', 'enrol')));
+        }
+
         // Delete course icon.
         if (can_delete_course($acourse->id)) {
             $url = new moodle_url('/course/delete.php', array('id' => $acourse->id));
