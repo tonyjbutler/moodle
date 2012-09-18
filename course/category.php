@@ -353,6 +353,12 @@ if (!$courses) {
                 echo $OUTPUT->action_icon($url, new pix_icon('i/users', get_string('enrolledusers', 'enrol')));
             }
 
+            // enrolment methods link
+            if (has_capability('moodle/course:enrolconfig', $coursecontext)) {
+                $url = new moodle_url('/enrol/instances.php', array('id' => $acourse->id));
+                echo $OUTPUT->action_icon($url, new pix_icon('i/roles', get_string('enrolmentinstances', 'enrol')));
+            }
+
             if (can_delete_course($acourse->id)) {
                 $url = new moodle_url('/course/delete.php', array('id' => $acourse->id));
                 echo $OUTPUT->action_icon($url, new pix_icon('t/delete', get_string('delete')));
