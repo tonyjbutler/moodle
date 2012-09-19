@@ -133,7 +133,8 @@ div.notifyproblem {
 }
 #underfooter div {
     text-align: center;
-    font-size: .8em;
+    font-size: .9em;
+    margin-bottom: 12px;
 }
 #underfooter .noajax {
     padding-bottom: .2em;
