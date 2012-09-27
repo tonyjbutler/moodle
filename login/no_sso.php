@@ -39,7 +39,7 @@ if ($cancel) {
 $PAGE->https_required();
 
 $context = get_context_instance(CONTEXT_SYSTEM);
-$PAGE->set_url("$CFG->httpswwwroot/login/index.php");
+$PAGE->set_url("$CFG->httpswwwroot/login/no_sso.php");
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('login');
 
@@ -246,7 +246,7 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
 
         // test the session actually works by redirecting to self
         $SESSION->wantsurl = $urltogo;
-        redirect(new moodle_url(get_login_url(), array('testsession'=>$USER->id)));
+        redirect(new moodle_url(get_no_sso_login_url(), array('testsession'=>$USER->id)));
 
     } else {
         if (empty($errormsg)) {
@@ -341,11 +341,11 @@ if (isloggedin() and !isguestuser()) {
     // prevent logging when already logged in, we do not want them to relogin by accident because sesskey would be changed
     echo $OUTPUT->box_start();
     $logout = new single_button(new moodle_url($CFG->httpswwwroot.'/login/logout.php', array('sesskey'=>sesskey(),'loginpage'=>1)), get_string('logout'), 'post');
-    $continue = new single_button(new moodle_url($CFG->httpswwwroot.'/login/index.php', array('cancel'=>1)), get_string('cancel'), 'get');
+    $continue = new single_button(new moodle_url($CFG->httpswwwroot.'/login/no_sso.php', array('cancel'=>1)), get_string('cancel'), 'get');
     echo $OUTPUT->confirm(get_string('alreadyloggedin', 'error', fullname($USER)), $logout, $continue);
     echo $OUTPUT->box_end();
 } else {
-    include("index_form.html");
+    include("no_sso_form.html");
     if (!empty($CFG->loginpageautofocus)) {
         //focus username or password
         $PAGE->requires->js_init_call('M.util.focus_login_form', null, true);

@@ -2611,6 +2611,23 @@ function get_login_url() {
 }
 
 /**
+ * Returns full no-sso login url to bypass Access Gateway single sign-on.
+ *
+ * @return string no-sso login url
+ */
+function get_no_sso_login_url() {
+    global $CFG;
+
+    $url = "$CFG->wwwroot/login/no_sso.php";
+
+    if (!empty($CFG->loginhttps)) {
+        $url = str_replace('http:', 'https:', $url);
+    }
+
+    return $url;
+}
+
+/**
  * This function checks that the current user is logged in and has the
  * required privileges
  *
