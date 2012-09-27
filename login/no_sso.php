@@ -26,12 +26,6 @@
 
 require('../config.php');
 
-// Try to prevent searching for sites that allow sign-up.
-if (!isset($CFG->additionalhtmlhead)) {
-    $CFG->additionalhtmlhead = '';
-}
-$CFG->additionalhtmlhead .= '<meta name="robots" content="noindex" />';
-
 redirect_if_major_upgrade_required();
 
 $testsession = optional_param('testsession', 0, PARAM_INT); // test session works properly
@@ -44,8 +38,8 @@ if ($cancel) {
 //HTTPS is required in this page when $CFG->loginhttps enabled
 $PAGE->https_required();
 
-$context = context_system::instance();
-$PAGE->set_url("$CFG->httpswwwroot/login/index.php");
+$context = get_context_instance(CONTEXT_SYSTEM);
+$PAGE->set_url("$CFG->httpswwwroot/login/no_sso.php");
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('login');
 
@@ -119,7 +113,7 @@ if ($user !== false or $frm !== false or $errormsg !== '') {
 
 if ($frm and isset($frm->username)) {                             // Login WITH cookies
 
-    $frm->username = trim(textlib::strtolower($frm->username));
+    $frm->username = trim(moodle_strtolower($frm->username));
 
     if (is_enabled_auth('none') ) {
         if ($frm->username !== clean_param($frm->username, PARAM_USERNAME)) {
@@ -153,6 +147,8 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
         echo $OUTPUT->footer();
         die;
     }
+
+    update_login_count();
 
     if ($user) {
 
@@ -210,16 +206,13 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
             unset($SESSION->wantsurl);
         }
 
-        // If the url to go to is the same as the site page, check for default homepage.
-        if ($urltogo == ($CFG->wwwroot . '/')) {
-            $home_page = get_home_page();
-            // Go to my-moodle page instead of site homepage if defaulthomepage set to homepage_my
-            if ($home_page == HOMEPAGE_MY && !is_siteadmin() && !isguestuser()) {
-                if ($urltogo == $CFG->wwwroot or $urltogo == $CFG->wwwroot.'/' or $urltogo == $CFG->wwwroot.'/index.php') {
-                    $urltogo = $CFG->wwwroot.'/my/';
-                }
+    /// Go to my-moodle page instead of site homepage if defaulthomepage set to homepage_my
+        if (!empty($CFG->defaulthomepage) && $CFG->defaulthomepage == HOMEPAGE_MY && !is_siteadmin() && !isguestuser()) {
+            if ($urltogo == $CFG->wwwroot or $urltogo == $CFG->wwwroot.'/' or $urltogo == $CFG->wwwroot.'/index.php') {
+                $urltogo = $CFG->wwwroot.'/my/';
             }
         }
+
 
     /// check if user password has expired
     /// Currently supported only for ldap-authentication module
@@ -249,9 +242,11 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
             }
         }
 
+        reset_login_count();
+
         // test the session actually works by redirecting to self
         $SESSION->wantsurl = $urltogo;
-        redirect(new moodle_url(get_login_url(), array('testsession'=>$USER->id)));
+        redirect(new moodle_url(get_no_sso_login_url(), array('testsession'=>$USER->id)));
 
     } else {
         if (empty($errormsg)) {
@@ -346,14 +341,12 @@ if (isloggedin() and !isguestuser()) {
     // prevent logging when already logged in, we do not want them to relogin by accident because sesskey would be changed
     echo $OUTPUT->box_start();
     $logout = new single_button(new moodle_url($CFG->httpswwwroot.'/login/logout.php', array('sesskey'=>sesskey(),'loginpage'=>1)), get_string('logout'), 'post');
-    $continue = new single_button(new moodle_url($CFG->httpswwwroot.'/login/index.php', array('cancel'=>1)), get_string('cancel'), 'get');
+    $continue = new single_button(new moodle_url($CFG->httpswwwroot.'/login/no_sso.php', array('cancel'=>1)), get_string('cancel'), 'get');
     echo $OUTPUT->confirm(get_string('alreadyloggedin', 'error', fullname($USER)), $logout, $continue);
     echo $OUTPUT->box_end();
 } else {
-    include("index_form.html");
-    if ($errormsg) {
-        $PAGE->requires->js_init_call('M.util.focus_login_error', null, true);
-    } else if (!empty($CFG->loginpageautofocus)) {
+    include("no_sso_form.html");
+    if (!empty($CFG->loginpageautofocus)) {
         //focus username or password
         $PAGE->requires->js_init_call('M.util.focus_login_form', null, true);
     }
