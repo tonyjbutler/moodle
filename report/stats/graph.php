@@ -89,7 +89,7 @@ $stats = stats_fix_zeros($stats,$param->timeafter,$param->table,(!empty($param->
 
 $stats = array_reverse($stats);
 
-$graph = new graph(750,400);
+$graph = new graph(750,500);
 
 $graph->parameter['legend'] = 'outside-right';
 $graph->parameter['legend_size'] = 10;
