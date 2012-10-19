@@ -162,25 +162,6 @@ if ($hassiteconfig
         500 => '500');
     $temp->add(new admin_setting_configselect('backup/backup_auto_keep', get_string('keep'), get_string('backupkeephelp'), 1, $keepoptoins));
     $temp->add(new admin_setting_configcheckbox('backup/backup_shortname', get_string('backup_shortname', 'admin'), get_string('backup_shortnamehelp', 'admin'), 0));
-    $temp->add(new admin_setting_configcheckbox('backup/backup_auto_skip_hidden', get_string('skiphidden', 'backup'), get_string('skiphiddenhelp', 'backup'), 1));
-    $temp->add(new admin_setting_configselect('backup/backup_auto_skip_not_modif_since_days', get_string('skipnotmodifsincedays', 'backup'), get_string('skipnotmodifsincedayshelp', 'backup'), 30, array(
-        0 => get_string('never'),
-        1   => get_string('numdays', '', 1),
-        2   => get_string('numdays', '', 2),
-        3   => get_string('numdays', '', 3),
-        5   => get_string('numdays', '', 5),
-        7   => get_string('numdays', '', 7),
-        10  => get_string('numdays', '', 10),
-        14  => get_string('numdays', '', 14),
-        20  => get_string('numdays', '', 20),
-        30  => get_string('numdays', '', 30),
-        60  => get_string('numdays', '', 60),
-        90  => get_string('numdays', '', 90),
-        120 => get_string('numdays', '', 120),
-        180 => get_string('numdays', '', 180),
-        365 => get_string('numdays', '', 365)
-    )));
-    $temp->add(new admin_setting_configcheckbox('backup/backup_auto_skip_not_modif_since_prev', get_string('skipnotmodifsinceprevious', 'backup'), get_string('skipnotmodifsinceprevioushelp', 'backup'), 0));
 
     // Automated defaults section.
     $temp->add(new admin_setting_heading('automatedsettings', get_string('automatedsettings','backup'), ''));
