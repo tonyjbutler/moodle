@@ -244,7 +244,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
 
         $str = '<div title="'.s($this->field->description).'">';
         $str .= '<label class="accesshide" for="field_'.$this->field->id.'">'.$this->field->description.'</label>';
-        $str .= '<input style="width:300px;" type="text" name="field_'.$this->field->id.'" id="field_'.$this->field->id.'" value="'.s($content).'" />';
+        $str .= '<input class="basefieldinput" type="text" name="field_'.$this->field->id.'" id="field_'.$this->field->id.'" value="'.s($content).'" />';
         $str .= '</div>';
 
         return $str;
@@ -1546,14 +1546,16 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
     $pagesizes = array(2=>2,3=>3,4=>4,5=>5,6=>6,7=>7,8=>8,9=>9,10=>10,15=>15,
                        20=>20,30=>30,40=>40,50=>50,100=>100,200=>200,300=>300,400=>400,500=>500,1000=>1000);
     echo html_writer::select($pagesizes, 'perpage', $perpage, false, array('id'=>'pref_perpage'));
-    echo '<div id="reg_search" style="display: ';
+
     if ($advanced) {
-        echo 'none';
+        $regsearchclass = 'search_none';
+        $advancedsearchclass = 'search_inline';
+    } else {
+        $regsearchclass = 'search_inline';
+        $advancedsearchclass = 'search_none';
     }
-    else {
-        echo 'inline';
-    }
-    echo ';" >&nbsp;&nbsp;&nbsp;<label for="pref_search">'.get_string('search').'</label> <input type="text" size="16" name="search" id= "pref_search" value="'.s($search).'" /></div>';
+    echo '<div id="reg_search" class="' . $regsearchclass . '" >&nbsp;&nbsp;&nbsp;';
+    echo '<label for="pref_search">'.get_string('search').'</label> <input type="text" size="16" name="search" id= "pref_search" value="'.s($search).'" /></div>';
     echo '&nbsp;&nbsp;&nbsp;<label for="pref_sortby">'.get_string('sortby').'</label> ';
     // foreach field, print the option
     echo '<select name="sort" id="pref_sortby">';
@@ -1613,15 +1615,7 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
     echo '&nbsp;<input type="submit" value="'.get_string('savesettings','data').'" />';
 
     echo '<br />';
-    echo '<div class="dataadvancedsearch" id="data_adv_form" style="display: ';
-
-    if ($advanced) {
-        echo 'inline';
-    }
-    else {
-        echo 'none';
-    }
-    echo ';margin-left:auto;margin-right:auto;" >';
+    echo '<div class="' . $advancedsearchclass . '" id="data_adv_form">';
     echo '<table class="boxaligncenter">';
 
     // print ASC or DESC
@@ -1686,7 +1680,7 @@ function data_print_preference_form($data, $perpage, $search, $sort='', $order='
     echo format_text($newtext, FORMAT_HTML, $options);
     echo '</td></tr>';
 
-    echo '<tr><td colspan="4" style="text-align: center;"><br/><input type="submit" value="'.get_string('savesettings','data').'" /><input type="submit" name="resetadv" value="'.get_string('resetsettings','data').'" /></td></tr>';
+    echo '<tr><td colspan="4"><br/><input type="submit" value="'.get_string('savesettings','data').'" /><input type="submit" name="resetadv" value="'.get_string('resetsettings','data').'" /></td></tr>';
     echo '</table>';
     echo '</div>';
     echo '</div>';
@@ -3473,21 +3467,28 @@ function data_user_can_delete_preset($context, $preset) {
 /**
  * Get all of the record ids from a database activity.
  *
- * @param int $dataid      The dataid of the database module.
- * @return array $idarray  An array of record ids
+ * @param int    $dataid      The dataid of the database module.
+ * @param object $selectdata  Contains an additional sql statement for the
+ *                            where clause for group and approval fields.
+ * @param array  $params      Parameters that coincide with the sql statement.
+ * @return array $idarray     An array of record ids
  */
-function data_get_all_recordids($dataid) {
+function data_get_all_recordids($dataid, $selectdata = '', $params = null) {
     global $DB;
-    $initsql = 'SELECT c.recordid
-                  FROM {data_fields} f,
-                       {data_content} c
-                 WHERE f.dataid = :dataid
-                   AND f.id = c.fieldid
-              GROUP BY c.recordid';
-    $initrecord = $DB->get_recordset_sql($initsql, array('dataid' => $dataid));
+    $initsql = 'SELECT r.id
+                  FROM {data_records} r
+                 WHERE r.dataid = :dataid';
+    if ($selectdata != '') {
+        $initsql .= $selectdata;
+        $params = array_merge(array('dataid' => $dataid), $params);
+    } else {
+        $params = array('dataid' => $dataid);
+    }
+    $initsql .= ' GROUP BY r.id';
+    $initrecord = $DB->get_recordset_sql($initsql, $params);
     $idarray = array();
     foreach ($initrecord as $data) {
-        $idarray[] = $data->recordid;
+        $idarray[] = $data->id;
     }
     // Close the record set and free up resources.
     $initrecord->close();
@@ -3632,8 +3633,7 @@ function data_get_advanced_search_sql($sort, $data, $recordids, $selectdata, $so
     } else {
         list($insql, $inparam) = $DB->get_in_or_equal(array('-1'), SQL_PARAMS_NAMED);
     }
-    $nestfromsql .= ' AND c.recordid ' . $insql . $groupsql;
-    $nestfromsql = "$nestfromsql $selectdata";
+    $nestfromsql .= ' AND c.recordid ' . $insql . $selectdata . $groupsql;
     $sqlselect['sql'] = "$nestselectsql $nestfromsql $sortorder";
     $sqlselect['params'] = $inparam;
     return $sqlselect;

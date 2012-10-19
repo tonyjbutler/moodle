@@ -152,7 +152,11 @@ class course_edit_form extends moodleform {
         $mform->setDefault('showreports', $courseconfig->showreports);
 
         if (has_capability('moodle/site:config', $systemcontext)) {
-            $choices = get_max_upload_sizes($CFG->maxbytes);
+            // Handle non-existing $course->maxbytes on course creation.
+            $coursemaxbytes = !isset($course->maxbytes) ? null : $course->maxbytes;
+
+            // Let's prepare the maxbytes popup.
+            $choices = get_max_upload_sizes($CFG->maxbytes, 0, 0, $coursemaxbytes);
             $mform->addElement('select', 'maxbytes', get_string('maximumupload'), $choices);
             $mform->addHelpButton('maxbytes', 'maximumupload');
             $mform->setDefault('maxbytes', $courseconfig->maxbytes);

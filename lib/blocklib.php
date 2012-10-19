@@ -451,9 +451,17 @@ class block_manager {
      * @return bool True if all of the blocks within that region are docked
      */
     public function region_completely_docked($region, $output) {
-        if (!$this->page->theme->enable_dock) {
+        global $CFG;
+        // If theme doesn't allow docking or allowblockstodock is not set, then return.
+        if (!$this->page->theme->enable_dock || empty($CFG->allowblockstodock)) {
             return false;
         }
+
+        // Do not dock the region when the user attemps to move a block.
+        if ($this->movingblock) {
+            return false;
+        }
+
         $this->check_is_loaded();
         $this->ensure_content_created($region, $output);
         foreach($this->visibleblockcontent[$region] as $instance) {
