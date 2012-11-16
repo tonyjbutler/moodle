@@ -39,7 +39,7 @@ $handlers = array(
  * TODO: this has to be moved into separate queueing framework....
  */
     'portfolio_send' => array (
-        'handlerfile'      => '/lib/portfolio.php',
+        'handlerfile'      => '/lib/portfoliolib.php',
         'handlerfunction'  => 'portfolio_handle_event',    // argument to call_user_func(), could be an array
         'schedule'         => 'cron',
         'internal'         => 0,
