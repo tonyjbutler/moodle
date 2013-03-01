@@ -360,6 +360,40 @@ function events_process_queued_handler($qhandler) {
     $qh->status       = $qhandler->status + 1;
     $DB->update_record('events_queue_handlers', $qh);
 
+    // If handler fails repeatedly, alert admin.
+    if (($qh->status == 6) || ((($qh->status - 6) % 48) == 0)) {
+        $admin = get_admin();
+        $message = "";
+
+        // Build the message text
+        $message .= get_string('warning').": ";
+        $message .= get_string('eventsqueuehandlerfailmessage', '', $qh);
+
+        // Build the message subject
+        $site = get_site();
+        $prefix = format_string($site->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, SITEID))).": ";
+        $subject = $prefix.get_string('eventsqueuehandlerfail');
+
+        // Set message priority
+        $admin->priority = 1;
+
+        // Send the message
+        $eventdata = new stdClass();
+        $eventdata->modulename        = 'moodle';
+        $eventdata->userfrom          = $admin;
+        $eventdata->userto            = $admin;
+        $eventdata->subject           = $subject;
+        $eventdata->fullmessage       = $message;
+        $eventdata->fullmessageformat = FORMAT_PLAIN;
+        $eventdata->fullmessagehtml   = '';
+        $eventdata->smallmessage      = '';
+
+        $eventdata->component         = 'moodle';
+        $eventdata->name              = 'notices';
+
+        message_send($eventdata);
+    }
+
     return false;
 }
 
