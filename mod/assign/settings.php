@@ -86,4 +86,17 @@ if ($ADMIN->fulltree) {
                                                     $description,
                                                     0));
 
+    $name = new lang_string('markingworkflow', 'mod_assign');
+    $description = new lang_string('markingworkflow_help', 'mod_assign');
+    $setting = new admin_setting_configcheckbox('assign/markingworkflow',
+                                                    $name,
+                                                    $description,
+                                                    0);
+
+    $name = new lang_string('markingallocation', 'mod_assign');
+    $description = new lang_string('markingallocation_help', 'mod_assign');
+    $setting = new admin_setting_configcheckbox('assign/markingallocation',
+                                                    $name,
+                                                    $description,
+                                                    0);
 }
