@@ -105,16 +105,7 @@ echo $OUTPUT->doctype() ?>
 <header role="banner" class="navbar <?php echo $navbar_inverse ?> navbar-fixed-top">
     <nav role="navigation" class="navbar-inner">
         <div class="container-fluid">
-
-            <?php
-            if (!$haslogo) { ?>
-                <a class="brand" href="<?php echo $CFG->wwwroot;?>"><?php echo $SITE->shortname; ?></a>
-                <?php
-            } else { ?>
-                <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
-                <?php
-            } ?>
-
+            <a class="brand" href="<?php echo $CFG->wwwroot;?>"><?php echo $SITE->shortname; ?></a>
             <a class="btn btn-navbar" data-toggle="workaround-collapse" data-target=".nav-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -134,7 +125,11 @@ echo $OUTPUT->doctype() ?>
 </header>
 
 <div id="page" class="container-fluid">
-
+<?php if ($haslogo) { ?>
+<header id="logo" class="clearfix">
+    <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
+</header>
+<?php } ?>
 <?php if ($hasheader) { ?>
 <header id="page-header" class="clearfix">
     <?php if ($hasnavbar) { ?>
