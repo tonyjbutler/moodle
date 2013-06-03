@@ -105,7 +105,16 @@ echo $OUTPUT->doctype() ?>
 <header role="banner" class="navbar <?php echo $navbar_inverse ?> navbar-fixed-top">
     <nav role="navigation" class="navbar-inner">
         <div class="container-fluid">
-            <a class="brand" href="<?php echo $CFG->wwwroot;?>"><?php echo $SITE->shortname; ?></a>
+
+            <?php
+            if (!$haslogo) { ?>
+                <a class="brand" href="<?php echo $CFG->wwwroot;?>"><?php echo $SITE->shortname; ?></a>
+                <?php
+            } else { ?>
+                <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
+                <?php
+            } ?>
+
             <a class="btn btn-navbar" data-toggle="workaround-collapse" data-target=".nav-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -132,16 +141,7 @@ echo $OUTPUT->doctype() ?>
         <nav class="breadcrumb-button"><?php echo $PAGE->button; ?></nav>
         <?php echo $OUTPUT->navbar(); ?>
     <?php } ?>
-
-        <?php
-    if (!$haslogo) { ?>
-        <h1><?php echo $PAGE->heading ?></h1>
-        <?php
-    } else { ?>
-         <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
-        <?php
-    } ?>
-
+    <h1><?php echo $PAGE->heading ?></h1>
     <?php if (!empty($courseheader)) { ?>
         <div id="course-header"><?php echo $courseheader; ?></div>
     <?php } ?>
