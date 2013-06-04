@@ -21,7 +21,7 @@ div#page {
     }
 }
 
-header#logo {
+header#logos {
     margin-bottom: 20px;
 }
 
@@ -39,6 +39,22 @@ a.logo {
     background: url([[setting:logo]]) no-repeat 100% 0;
     display: block;
     float: right;
+}
+
+a.bfc-logo {
+    background: url([[pix:theme|bfc_logo]]) no-repeat 100% 0;
+    display: block;
+    float: right;
+    height: 68px;
+    margin: 0;
+    padding: 0;
+    width: 167px;
+}
+
+.dir-rtl a.bfc-logo {
+    background: url([[pix:theme|bfc_logo]]) no-repeat 0 0;
+    display: block;
+    float: left;
 }
 
 .container-fluid {
