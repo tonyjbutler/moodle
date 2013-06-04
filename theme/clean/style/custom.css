@@ -20,6 +20,10 @@ a.logo {
     float: right;
 }
 
+.container-fluid {
+    max-width: 1200px;
+}
+
 /* Custom CSS Settings
 -------------------------*/
 [[setting:customcss]]
