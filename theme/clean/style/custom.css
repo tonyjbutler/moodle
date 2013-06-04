@@ -1,5 +1,26 @@
 /* Custom CSS
 -------------------------*/
+body {
+    background: url([[pix:theme|body]]) no-repeat fixed center top #090103;
+}
+
+div#page {
+    background: #FFF;
+    margin-top: -20px;
+    padding-top: 20px;
+}
+
+@media (max-width: 979px) {
+    body {
+        background: transparent;
+    }
+
+    div#page {
+        margin-top: 0;
+        padding-top: 0;
+    }
+}
+
 header#logo {
     margin-bottom: 20px;
 }
