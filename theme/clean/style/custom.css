@@ -10,15 +10,8 @@ div#page {
     padding-top: 20px;
 }
 
-@media (max-width: 979px) {
-    body {
-        background: transparent;
-    }
-
-    div#page {
-        margin-top: 0;
-        padding-top: 0;
-    }
+.container-fluid {
+    max-width: 1200px;
 }
 
 header#logos {
@@ -57,8 +50,19 @@ a.bfc-logo {
     float: left;
 }
 
-.container-fluid {
-    max-width: 1200px;
+@media (max-width: 979px) {
+    body {
+        background: transparent;
+    }
+
+    div#page {
+        margin-top: 0;
+        padding-top: 0;
+    }
+
+    header#logos {
+        display: none;
+    }
 }
 
 /* Custom CSS Settings
