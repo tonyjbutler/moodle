@@ -125,6 +125,7 @@ echo $OUTPUT->doctype() ?>
 </header>
 
 <div id="page" class="container-fluid">
+
 <?php if ($haslogo) { ?>
 <header id="logos" class="clearfix">
     <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
@@ -137,7 +138,11 @@ echo $OUTPUT->doctype() ?>
         <nav class="breadcrumb-button"><?php echo $PAGE->button; ?></nav>
         <?php echo $OUTPUT->navbar(); ?>
     <?php } ?>
-    <h1><?php echo $PAGE->heading ?></h1>
+
+    <?php if ($PAGE->heading != $SITE->fullname) { ?>
+        <h1><?php echo $PAGE->heading ?></h1>
+    <?php } ?>
+
     <?php if (!empty($courseheader)) { ?>
         <div id="course-header"><?php echo $courseheader; ?></div>
     <?php } ?>
