@@ -1,7 +1,7 @@
 /* Custom CSS
 -------------------------*/
 body {
-    background: url([[pix:theme|body]]) no-repeat fixed center top #090103;
+    background: url([[pix:theme|body]]) no-repeat fixed 50% 40px #090103;
 }
 
 div#page {
