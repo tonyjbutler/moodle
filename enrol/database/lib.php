@@ -638,12 +638,16 @@ class enrol_database_plugin extends enrol_plugin {
         $fullname  = trim($this->get_config('newcoursefullname'));
         $shortname = trim($this->get_config('newcourseshortname'));
         $idnumber  = trim($this->get_config('newcourseidnumber'));
+        $summary   = trim($this->get_config('newcoursesummary'));
+        $startdate = trim($this->get_config('newcoursestartdate'));
         $category  = trim($this->get_config('newcoursecategory'));
 
         // Lowercased versions - necessary because we normalise the resultset with array_change_key_case().
         $fullname_l  = strtolower($fullname);
         $shortname_l = strtolower($shortname);
         $idnumber_l  = strtolower($idnumber);
+        $summary_l   = strtolower($summary);
+        $startdate_l = strtolower($startdate);
         $category_l  = strtolower($category);
 
         $localcategoryfield = $this->get_config('localcategoryfield', 'id');
@@ -662,6 +666,12 @@ class enrol_database_plugin extends enrol_plugin {
         }
         if ($idnumber) {
             $sqlfields[] = $idnumber;
+        }
+        if ($summary) {
+            $sqlfields[] = $summary;
+        }
+        if ($startdate) {
+            $sqlfields[] = $startdate;
         }
         $sql = $this->db_get_sql($table, array(), $sqlfields, true);
         $createcourses = array();
@@ -687,6 +697,8 @@ class enrol_database_plugin extends enrol_plugin {
                     $course->fullname  = $fields[$fullname_l];
                     $course->shortname = $fields[$shortname_l];
                     $course->idnumber  = $idnumber ? $fields[$idnumber_l] : '';
+                    $course->summary   = $summary ? $fields[$summary_l] : '';
+                    $course->startdate = $startdate ? $fields[$startdate_l] : time() + 3600 * 24;
                     if ($category) {
                         if (empty($fields[$category_l])) {
                             // Empty category means use default.
@@ -735,6 +747,7 @@ class enrol_database_plugin extends enrol_plugin {
                 $template = new stdClass();
                 $template->summary        = '';
                 $template->summaryformat  = FORMAT_HTML;
+                $template->startdate      = time() + 3600 * 24;
                 $template->format         = $courseconfig->format;
                 $template->newsitems      = $courseconfig->newsitems;
                 $template->showgrades     = $courseconfig->showgrades;
@@ -752,6 +765,8 @@ class enrol_database_plugin extends enrol_plugin {
                 $newcourse->fullname  = $fields->fullname;
                 $newcourse->shortname = $fields->shortname;
                 $newcourse->idnumber  = $fields->idnumber;
+                $newcourse->summary   = $fields->summary ? $fields->summary : $template->summary;
+                $newcourse->startdate = $fields->startdate ? $fields->startdate : $template->startdate;
                 $newcourse->category  = $fields->category;
 
                 // Detect duplicate data once again, above we can not find duplicates
@@ -764,7 +779,7 @@ class enrol_database_plugin extends enrol_plugin {
                     continue;
                 }
                 $c = create_course($newcourse);
-                $trace->output("creating course: $c->id, $c->fullname, $c->shortname, $c->idnumber, $c->category", 1);
+                $trace->output("creating course: $c->id, $c->fullname, $c->shortname, $c->idnumber, $c->summary, $c->startdate, $c->category", 1);
             }
 
             unset($createcourses);

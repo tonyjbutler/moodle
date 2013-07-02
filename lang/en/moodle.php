@@ -652,6 +652,9 @@ $string['errorcreatingactivity'] = 'Unable to create an instance of activity \'{
 $string['errorfiletoobig'] = 'The file was bigger than the limit of {$a} bytes';
 $string['errornouploadrepo'] = 'There is no upload repository enabled for this site';
 $string['errorwhenconfirming'] = 'You are not confirmed yet because an error occurred.  If you clicked on a link in an email to get here, make sure that the line in your email wasn\'t broken or wrapped. You may have to use cut and paste to reconstruct the link properly.';
+$string['eventsqueuehandlerfail'] = 'Events queue handler failure';
+$string['eventsqueuehandlerfailmessage'] = 'Processing of events queue handler with ID {$a->id} has failed {$a->status} times with the error message \'{$a->errormessage}\'.
+If you are unable to resolve this situation you should manually delete the failed handler from the `events_queue_handlers` table in order to prevent a backlog of queued events.';
 $string['everybody'] = 'Everybody';
 $string['executeat'] = 'Execute at';
 $string['existing'] = 'Existing';
@@ -856,8 +859,12 @@ $string['chooseuser'] = 'Choose a user';
 $string['icqnumber'] = 'ICQ number';
 $string['icon'] = 'Icon';
 $string['idnumber'] = 'ID number';
-$string['idnumbercourse'] = 'Course ID number';
-$string['idnumbercourse_help'] = 'The ID number of a course is only used when matching the course against external systems and is not displayed anywhere on the site. If the course has an official code name it may be entered, otherwise the field can be left blank.';
+$string['idnumbercourse'] = 'EBS course code';
+$string['idnumbercourse_help'] = '<p>Enter the combined EBS Unit Instance (UI) and Occurrence code here in the format UI_YY/YY, e.g. AB1FE01_06/07.</p>
+<p>This field can only contain a single UIO code, and it must be unique (although it can be left empty, e.g. for meta-parent courses).</p>
+<p>If a course needs to be mapped against more than one UIO, create a meta-child course for each code and import them all into a single meta-parent course.</p>
+<p>Conversely, if several courses needs to be mapped against the same UIO, create one meta-child course (mapped against the single code) and import it into several meta-parent courses.</p>';
+$string['idnumbercoursetaken'] = 'EBS code is already used for another course ({$a})';
 $string['idnumbergroup'] = 'Group ID number';
 $string['idnumbergroup_help'] = 'The ID number of a group is only used when matching the group against external systems and is not displayed anywhere on the site. If the group has an official code name it may be entered, otherwise the field can be left blank.';
 $string['idnumbergrouping'] = 'Grouping ID number';

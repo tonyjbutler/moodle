@@ -485,7 +485,7 @@ if (!$courses) {
         $courseurl = new moodle_url('/course/view.php', array('id' => $acourse->id));
         $attributes = array();
         $attributes['class'] = $acourse->visible ? '' : 'dimmed';
-        $coursename = get_course_display_name_for_list($acourse);
+        $coursename = get_course_display_name_for_list($acourse, true);
         $coursename = format_string($coursename, true, array('context' => $coursecontext));
         $coursename = html_writer::link($courseurl, $coursename, $attributes);
 
@@ -500,6 +500,12 @@ if (!$courses) {
         if (has_capability('moodle/course:enrolreview', $coursecontext)) {
             $url = new moodle_url('/enrol/users.php', array('id' => $acourse->id));
             $icons[] = $OUTPUT->action_icon($url, new pix_icon('t/enrolusers', get_string('enrolledusers', 'enrol')));
+        }
+
+        // Enrolment methods icon.
+        if (has_capability('moodle/course:enrolconfig', $coursecontext)) {
+            $url = new moodle_url('/enrol/instances.php', array('id' => $acourse->id));
+            $icons[] = $OUTPUT->action_icon($url, new pix_icon('t/cohort', get_string('enrolmentinstances', 'enrol')));
         }
 
         // Delete course icon.

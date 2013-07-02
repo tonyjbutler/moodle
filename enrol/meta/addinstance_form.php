@@ -36,12 +36,12 @@ class enrol_meta_addinstance_form extends moodleform {
         $course = $this->_customdata;
         $this->course = $course;
 
-        $existing = $DB->get_records('enrol', array('enrol'=>'meta', 'courseid'=>$course->id), '', 'customint1, id');
+        $existing = $DB->get_records('enrol', array('enrol'=>'meta', 'courseid'=>$course->id), '', 'id, customint1');
 
         // TODO: this has to be done via ajax or else it will fail very badly on large sites!
         $courses = array('' => get_string('choosedots'));
         list ($select, $join) = context_instance_preload_sql('c.id', CONTEXT_COURSE, 'ctx');
-        $sql = "SELECT c.id, c.fullname, c.shortname, c.visible $select FROM {course} c $join ORDER BY c.sortorder ASC";
+        $sql = "SELECT c.id, c.fullname, c.shortname, c.idnumber, c.visible $select FROM {course} c $join WHERE c.idnumber <> '' ORDER BY c.idnumber ASC";
         $rs = $DB->get_recordset_sql($sql);
         foreach ($rs as $c) {
             if ($c->id == SITEID or $c->id == $course->id or isset($existing[$c->id])) {
@@ -55,7 +55,7 @@ class enrol_meta_addinstance_form extends moodleform {
             if (!has_capability('enrol/meta:selectaslinked', $coursecontext)) {
                 continue;
             }
-            $courses[$c->id] = $coursecontext->get_context_name(false);
+            $courses[$c->id] = format_string($c->idnumber).' ('.format_string($c->fullname).')';
         }
         $rs->close();
 
@@ -82,7 +82,7 @@ class enrol_meta_addinstance_form extends moodleform {
             $errors['link'] = get_string('required');
         } else {
             $coursecontext = context_course::instance($c->id);
-            $existing = $DB->get_records('enrol', array('enrol'=>'meta', 'courseid'=>$this->course->id), '', 'customint1, id');
+            $existing = $DB->get_records('enrol', array('enrol'=>'meta', 'courseid'=>$this->course->id), '', 'id, customint1');
             if (!$c->visible and !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
                 $errors['link'] = get_string('error');
             } else if (!has_capability('enrol/meta:selectaslinked', $coursecontext)) {

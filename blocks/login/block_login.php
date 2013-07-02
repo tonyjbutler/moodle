@@ -10,7 +10,7 @@ class block_login extends block_base {
     }
 
     function get_content () {
-        global $USER, $CFG, $SESSION;
+        global $USER, $CFG, $SESSION, $OUTPUT;
         $wwwroot = '';
         $signup = '';
 
@@ -49,7 +49,17 @@ class block_login extends block_base {
 
         if (!isloggedin() or isguestuser()) {   // Show the block
 
-            $this->content->text .= "\n".'<form class="loginform" id="login" method="post" action="'.get_login_url().'" '.$autocomplete.'>';
+            $this->content->text .= "\n".'<div id="cookie_info">Cookies must be enabled '.$OUTPUT->help_icon('cookiesenabled').'</div>';
+
+            $this->content->text .= '<div id="sso_button">';
+            $this->content->text .= '<a href="'.get_login_url().'" title="B&FC Web Applications Single Sign-on">Web Apps Single Sign-on</a>';
+            $this->content->text .= '</div>';
+
+            $this->content->text .= '<div id="sso_intro">';
+            $this->content->text .= '<p>Click the button above to single sign into all college web applications, or use the form below to login to Moodle only.</p>';
+            $this->content->text .= '</div>';
+
+            $this->content->text .= '<form class="loginform" id="login" method="post" action="'.get_no_sso_login_url().'" '.$autocomplete.'>';
 
             $this->content->text .= '<div class="c1 fld username"><label for="login_username">'.get_string('username').'</label>';
             $this->content->text .= '<input type="text" name="username" id="login_username" value="'.s($username).'" /></div>';

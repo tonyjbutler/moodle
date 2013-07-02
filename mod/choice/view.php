@@ -22,7 +22,7 @@
         print_error('coursemisconf');
     }
 
-    require_course_login($course, false, $cm);
+    require_login($course, false, $cm); // require user to login for front page choice
 
     if (!$choice = choice_get_choice($cm->instance)) {
         print_error('invalidcoursemodule');

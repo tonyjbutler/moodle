@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Logs the user out and sends them to the home page
+ * Logs the user out and sends them to the Access Gateway logout page
  *
  * @package    core
  * @subpackage auth
@@ -36,7 +36,7 @@ $login   = optional_param('loginpage', 0, PARAM_BOOL);
 if ($login) {
     $redirect = get_login_url();
 } else {
-    $redirect = $CFG->wwwroot.'/';
+    $redirect = $CFG->wwwroot.'/AGLogout'; // redirect to Access Gateway logout page to ensure user cannot be single signed back in
 }
 
 if (!isloggedin()) {
