@@ -131,16 +131,18 @@ echo $OUTPUT->doctype() ?>
     <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
     <a class="bfc-logo" href="http://www.blackpool.ac.uk" title="B&amp;FC Home" target="_blank"></a>
 </header>
+<?php } else { ?>
+    <?php if ($PAGE->heading != $SITE->fullname) { ?>
+    <header>
+        <h1><?php echo $PAGE->heading ?></h1>
+    </header>
+    <?php } ?>
 <?php } ?>
 <?php if ($hasheader) { ?>
 <header id="page-header" class="clearfix">
     <?php if ($hasnavbar) { ?>
         <nav class="breadcrumb-button"><?php echo $PAGE->button; ?></nav>
         <?php echo $OUTPUT->navbar(); ?>
-    <?php } ?>
-
-    <?php if ($PAGE->heading != $SITE->fullname) { ?>
-        <h1><?php echo $PAGE->heading ?></h1>
     <?php } ?>
 
     <?php if (!empty($courseheader)) { ?>
