@@ -14,6 +14,16 @@ div#page {
     max-width: 1200px;
 }
 
+.navbar .brand {
+    background: url([[pix:theme|mdl_grey]]) no-repeat 20px center;
+    width: 96px;
+    height: 20px;
+}
+
+.navbar .brand:hover {
+    background: url([[pix:theme|mdl_logo]]) no-repeat 20px center;
+}
+
 header#logos {
     margin-bottom: 20px;
 }
