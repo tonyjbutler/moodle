@@ -126,7 +126,7 @@ echo $OUTPUT->doctype() ?>
 
 <div id="page" class="container-fluid">
 
-<?php if ($haslogo) { ?>
+<?php if ($haslogo && $PAGE->bodyid == 'page-site-index') { ?>
 <header id="logos" class="clearfix">
     <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
     <a class="bfc-logo" href="http://www.blackpool.ac.uk" title="B&amp;FC Home" target="_blank"></a>
