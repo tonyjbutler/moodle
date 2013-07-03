@@ -126,20 +126,15 @@ echo $OUTPUT->doctype() ?>
 
 <div id="page" class="container-fluid">
 
-<?php if ($haslogo && $PAGE->bodyid == 'page-site-index') { ?>
-<header id="logos" class="clearfix">
-    <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
-    <a class="bfc-logo" href="http://www.blackpool.ac.uk" title="B&amp;FC Home" target="_blank"></a>
-</header>
-<?php } else { ?>
-    <?php if ($PAGE->heading != $SITE->fullname) { ?>
-    <header>
-        <h1><?php echo $PAGE->heading ?></h1>
-    </header>
-    <?php } ?>
-<?php } ?>
 <?php if ($hasheader) { ?>
 <header id="page-header" class="clearfix">
+    <?php if ($haslogo && $PAGE->bodyid == 'page-site-index') { ?>
+        <a class="logo" href="<?php echo $CFG->wwwroot; ?>" title="<?php print_string('home'); ?>"></a>
+        <a class="bfc-logo" href="http://www.blackpool.ac.uk" title="B&amp;FC Home" target="_blank"></a>
+    <?php } else if ($PAGE->heading != $SITE->fullname) { ?>
+        <h1><?php echo $PAGE->heading ?></h1>
+    <?php } ?>
+
     <?php if ($hasnavbar) { ?>
         <nav class="breadcrumb-button"><?php echo $PAGE->button; ?></nav>
         <?php echo $OUTPUT->navbar(); ?>
