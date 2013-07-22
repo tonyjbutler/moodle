@@ -32,7 +32,7 @@ defined('MOODLE_INTERNAL') || die();
  * The maximum courses in a category
  * MAX_COURSES_IN_CATEGORY * MAX_COURSE_CATEGORIES must not be more than max integer!
  */
-define('MAX_COURSES_IN_CATEGORY', 10000);
+define('MAX_COURSES_IN_CATEGORY', 100000);
 
 /**
   * The maximum number of course categories
