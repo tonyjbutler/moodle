@@ -103,12 +103,13 @@ for ($i=1; $i<=6; $i++) {
                 $years_other = explode('/',$years_other);
                 $year1_other = $years_other[0];
                 $year2_other = $years_other[1];
-                if ($year2_other - $year1_other == $duration) {
+                // Make sure occurrence is of the same duration and term is the same.
+                if (($year2_other - $year1_other == $duration) && ($term_other == $term)) {
+                    // Use this occurrence if it's earlier.
                     if ($year1_other < $year1) {
                         $meta_id = $rows_others[1];
                         $year1 = $year1_other;
                         $year2 = $year2_other;
-                        $term = $term_other;
                     }
                     // Also need to find latest existing start year.
                     if ($year1_other > $latest_start) {
@@ -196,7 +197,7 @@ for ($i=1; $i<=6; $i++) {
                     }
                 }
             }
-        }    
+        }
     }
 }
 
