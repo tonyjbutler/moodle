@@ -151,7 +151,7 @@ for ($i=1; $i<=6; $i++) {
                 $row_parent = mysqli_fetch_array($resource_parent);
                 $parent_id = $row_parent[0];
                 $shortname = $row_parent[1];
-                fwrite($log,"<span style=\"color: #C00;\">Unable to find new occurrence ($new_occ) of $course_code for meta course <a href=\"".$CFG->wwwroot."/course/view.php?id=".$parent_id."\" target=\"_blank\">$shortname</a>.</span><br />");
+                fwrite($log,"<span style=\"color: #C00;\">Unable to find new occurrence ($new_occ) of $course_code for meta course <a href=\"".$CFG->wwwroot."/enrol/instances.php?id=".$parent_id."\" target=\"_blank\">$shortname</a>.</span><br />");
                 $fail++;
             }
         } else {
@@ -180,7 +180,7 @@ for ($i=1; $i<=6; $i++) {
                     $parent_id = $row_parent[0];
                     $shortname = $row_parent[1];
                     enrol_meta_sync($parent_id, true);
-                    fwrite($log,"<span style=\"color: #0C0;\">Successfully updated meta course <a href=\"".$CFG->wwwroot."/course/view.php?id=".$parent_id."\" target=\"_blank\">$shortname</a> with new child course $new_code (start date $start_date).</span><br />");
+                    fwrite($log,"<span style=\"color: #0C0;\">Successfully updated meta course <a href=\"".$CFG->wwwroot."/enrol/instances.php?id=".$parent_id."\" target=\"_blank\">$shortname</a> with new child course $new_code (start date $start_date).</span><br />");
                     $success++;
                 }
             }
