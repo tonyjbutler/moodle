@@ -78,7 +78,7 @@ for ($i=1; $i<=6; $i++) {
         $sql = "SELECT `mdl_course`.`idnumber`, `mdl_enrol`.`id`
                 FROM `mdl_course`, `mdl_enrol`
                 WHERE (`mdl_course`.`id` = `mdl_enrol`.`customint1`)
-                AND (`mdl_course`.`idnumber` LIKE '".$course_code."_%/%')
+                AND (`mdl_course`.`idnumber` LIKE '".$course_code."\_%/%')
                 AND (`mdl_enrol`.`courseid` = $parent_id)";
         $res_others = mysqli_query($link, $sql);
         if ($res_others == false) {
