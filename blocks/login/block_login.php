@@ -52,7 +52,7 @@ class block_login extends block_base {
             $this->content->text .= "\n".'<div id="cookie_info">Cookies must be enabled '.$OUTPUT->help_icon('cookiesenabled').'</div>';
 
             $this->content->text .= '<div id="sso_button">';
-            $this->content->text .= '<a href="'.get_login_url().'" title="B&FC Web Applications Single Sign-on">Web Apps Single Sign-on</a>';
+            $this->content->text .= '<a href="'.get_login_url().'" title="Use B&FC Web Applications Single Sign-on">Login with Single Sign-on</a>';
             $this->content->text .= '</div>';
 
             $this->content->text .= '<div id="sso_intro">';
