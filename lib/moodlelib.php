@@ -4150,14 +4150,44 @@ function delete_user(stdClass $user) {
  * Any plugin that needs to purge user data should register the 'user_deleted' event.
  *
  * @param stdClass $user full user object before suspend
- * @return boolean always true
+ * @return boolean success
+ * @throws coding_exception if invalid $user parameter detected
  */
-function suspend_idm_user($user) {
+function suspend_idm_user(stdClass $user) {
     global $CFG, $DB;
     require_once($CFG->libdir.'/grouplib.php');
     require_once($CFG->libdir.'/gradelib.php');
     require_once($CFG->dirroot.'/message/lib.php');
     require_once($CFG->dirroot.'/tag/lib.php');
+
+    // Make sure nobody sends bogus record type as parameter.
+    if (!property_exists($user, 'id') or !property_exists($user, 'username')) {
+        throw new coding_exception('Invalid $user parameter in suspend_idm_user() detected');
+    }
+
+    // Better not trust the parameter and fetch the latest info,
+    // this will be very expensive anyway.
+    if (!$user = $DB->get_record('user', array('id'=>$user->id))) {
+        debugging('Attempt to suspend unknown user account.');
+        return false;
+    }
+
+    // There must be always exactly one guest record,
+    // originally the guest account was identified by username only,
+    // now we use $CFG->siteguest for performance reasons.
+    if ($user->username === 'guest' or isguestuser($user)) {
+        debugging('Guest user account can not be suspended.');
+        return false;
+    }
+
+    // Admin can be theoretically from different auth plugin,
+    // but we want to prevent suspension of internal accounts only,
+    // if anything goes wrong ppl may force somebody to be admin via
+    // config.php setting $CFG->siteadmins.
+    if ($user->auth === 'manual' and is_siteadmin($user)) {
+        debugging('Local administrator accounts can not be suspended.');
+        return false;
+    }
 
     // delete all grades - backup is kept in grade_grades_history table
     grade_user_delete($user->id);
@@ -4207,6 +4237,9 @@ function suspend_idm_user($user) {
 
     // now do a final accesslib cleanup - removes all role assignments in user context and context itself
     delete_context(CONTEXT_USER, $user->id);
+
+    // We don't use $delname because we need the username to remain the same
+    // in case the user returns later. We know all usernames are unique anyway.
 
     // mark internal user record as "suspended_idm"
     $updateuser = new stdClass();
