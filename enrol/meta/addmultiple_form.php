@@ -42,6 +42,7 @@ class enrol_meta_addmultiple_form extends moodleform {
         
         $searchgroup = array();
         $searchgroup[] = &$mform->createElement('text', 'links_searchtext');
+        $mform->setType('links_searchtext', PARAM_TEXT);
         $searchgroup[] = &$mform->createElement('submit', 'links_searchbutton', get_string('search'));
         $mform->registerNoSubmitButton('links_searchbutton');
         $searchgroup[] = &$mform->createElement('submit', 'links_clearbutton', get_string('clear'));
