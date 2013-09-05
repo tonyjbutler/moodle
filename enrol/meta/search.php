@@ -47,11 +47,12 @@ $context = get_context_instance(CONTEXT_COURSE, $course->id, MUST_EXIST);
 $rowlimit = empty($CFG->enrol_meta_addmultiple_rowlimit) ?  0 : (int) $CFG->enrol_meta_addmultiple_rowlimit;
 $existing = $DB->get_records('enrol', array('enrol'=>'meta', 'courseid'=>$id), '', 'customint1, id');
 if (!empty($searchtext)) {
-    $searchparam = '%' . $searchtext . '%';
-    $select = $DB->sql_like('shortname', '?', false, false);
+    $searchparam = $searchtext . '%';
+    $select = $DB->sql_like('shortname', '?', false, false) . " AND idnumber <> ''";
     $rs = $DB->get_recordset_select('course', $select, array($searchparam), 'shortname ASC', 'id, shortname, fullname, visible', 0, $rowlimit);
 } else {
-    $rs = $DB->get_recordset('course', null, 'shortname ASC', 'id, shortname, fullname, visible', 0, $rowlimit);
+    $select = "idnumber <> ''";
+    $rs = $DB->get_recordset_select('course', $select, null, 'shortname ASC', 'id, shortname, fullname, visible', 0, $rowlimit);
 }
 foreach ($rs as $c) {
     if ($c->id == SITEID or $c->id == $course->id or isset($existing[$c->id])) {

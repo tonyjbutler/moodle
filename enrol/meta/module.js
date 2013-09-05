@@ -181,7 +181,7 @@ M.core_enrol.init_course_selector = function (Y, name, courseid, lastsearch) {
             count = 0;
             for (var courseid in data.results) {
                 var course = data.results[courseid];
-                var option = Y.Node.create('<option value="'+course.id+'">'+course.fullname+' ['+course.shortname+']</option>');
+                var option = Y.Node.create('<option value="'+course.id+'">'+course.shortname+' ('+course.fullname+')</option>');
 
                 if (course.disabled) {
                     option.set('disabled', true);
