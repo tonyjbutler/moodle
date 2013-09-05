@@ -66,7 +66,7 @@ foreach ($rs as $c) {
         continue;
     }
     $c->fullname = shorten_text(format_string($c->fullname), 80, true);
-    $results[$c->id] = $c;
+    $results[$c->shortname] = $c;
 }
 $rs->close();
 echo json_encode(array('results'=>$results));
