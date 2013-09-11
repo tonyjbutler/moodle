@@ -1785,7 +1785,7 @@ function set_user_preference($name, $value, $user = null) {
         throw new coding_exception('Invalid value in set_user_preference() call, arrays are not allowed');
     }
     $value = (string)$value;
-    if (textlib::strlen($value) > 1333) { //value column maximum length is 1333 characters
+    if (textlib::strlen($value) > 2047) { //value column maximum length is 2047 characters
         throw new coding_exception('Invalid value in set_user_preference() call, value is is too long for the value column');
     }
 
