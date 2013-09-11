@@ -15,6 +15,6 @@ RewriteEngine on
   RewriteRule ^((b)?su|(student(s)?)?union)(/)?$ "/course/view.php?name=BSU" [L,NC,NE,R]
   RewriteRule ^((b)?su|(student(s)?)?union)(/)?(election(s)?|vote)(/)?$ "/mod/resource/view.php?id=95807" [L,NC,NE,R]
   RewriteRule ^((applicant|taster)(s)?|welcome)(/)?$ "/course/view.php?name=Welcome" [L,NC,NE,R]
-  RewriteRule ^(learner)?handbook(/)?$ "/pluginfile.php/373331/mod_resource/content/6/learner_handbook.pdf" [L,NC,NE,R]
-  RewriteRule ^(student)?charter(/)?$ "/pluginfile.php/132738/mod_resource/content/1/student_handbook/student_charter.pdf" [L,NC,NE,R]
+  RewriteRule ^(learner)?handbook(/)?$ "/mod/resource/view.php?id=118784" [L,NC,NE,R]
+  RewriteRule ^(student)?charter(/)?$ "/mod/resource/view.php?id=65340" [L,NC,NE,R]
   RewriteRule ^qaa(/)?$ "/course/view.php?name=QAA" [L,NC,NE,R]
