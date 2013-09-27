@@ -274,8 +274,9 @@ if (empty($SESSION->wantsurl)) {
                           $_SERVER["HTTP_REFERER"] != $CFG->wwwroot &&
                           $_SERVER["HTTP_REFERER"] != $CFG->wwwroot.'/' &&
                           $_SERVER["HTTP_REFERER"] != $CFG->httpswwwroot.'/login/' &&
-                          $_SERVER["HTTP_REFERER"] != $CFG->httpswwwroot.'/login/index.php' &&
-                          $_SERVER["HTTP_REFERER"] != $CFG->httpswwwroot.'/login/no_sso.php')
+                          strpos($_SERVER["HTTP_REFERER"], $CFG->httpswwwroot.'/login/?') !== 0 &&
+                          strpos($_SERVER["HTTP_REFERER"], $CFG->httpswwwroot.'/login/no_sso.php') !== 0 &&
+                          strpos($_SERVER["HTTP_REFERER"], $CFG->httpswwwroot.'/login/index.php') !== 0) // There might be some extra params such as ?lang=.
         ? $_SERVER["HTTP_REFERER"] : NULL;
 }
 
