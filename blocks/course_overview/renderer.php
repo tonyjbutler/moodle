@@ -216,6 +216,10 @@ class block_course_overview_renderer extends plugin_renderer_base {
         $output = $this->output->box_start('notice');
         $plural = $total > 1 ? 'plural' : '';
         $output .= get_string('hiddencoursecount'.$plural, 'block_course_overview', $total);
+        $output .= ' (';
+        $url = new moodle_url('/my/index.php', array('mynumber' => 0));
+        $output .= html_writer::link($url, get_string('alwaysshowall', 'block_course_overview'));
+        $output .= ')';
         $output .= $this->output->box_end();
         return $output;
     }
