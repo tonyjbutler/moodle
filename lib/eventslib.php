@@ -363,6 +363,8 @@ function events_process_queued_handler($qhandler) {
     $qh->status       = $qhandler->status + 1;
     $DB->update_record('events_queue_handlers', $qh);
 
+    debugging($errormessage);
+
     // If handler fails repeatedly, alert admin.
     if (($qh->status == 6) || ((($qh->status - 6) % 48) == 0)) {
         $admin = get_admin();
