@@ -23,7 +23,7 @@
  */
 
 $string['activityoverview'] = 'You have {$a}s that need attention';
-$string['alwaysshowall'] = 'Always Show All';
+$string['alwaysshowall'] = 'Always show all';
 $string['collapseall'] = 'Collapse All Course Lists';
 $string['configotherexpanded'] = 'If enabled, Other Courses will be expanded by default unless overriden by user preferences.';
 $string['configpreservestates'] = 'If enabled, the collapsed/expanded states set by the user are stored and used on each load.';
