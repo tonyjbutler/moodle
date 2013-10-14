@@ -23,7 +23,7 @@
  */
 
 $string['activityoverview'] = 'You have {$a}s that need attention';
-$string['alwaysshowall'] = 'Always Show All';
+$string['alwaysshowall'] = 'Always show all';
 $string['collapseall'] = 'Collapse All Course Lists';
 $string['configotherexpanded'] = 'If enabled, Other Courses will be expanded by default unless overriden by user preferences.';
 $string['configpreservestates'] = 'If enabled, the collapsed/expanded states set by the user are stored and used on each load.';
@@ -34,8 +34,8 @@ $string['defaultmaxcoursesdesc'] = 'Maximum courses which should be displayed on
 $string['expandall'] = 'Expand All Course Lists';
 $string['forcedefaultmaxcourses'] = 'Force maximum courses';
 $string['forcedefaultmaxcoursesdesc'] = 'If set then user will not be able to change his/her personal setting';
-$string['hiddencoursecount'] = 'You have {$a} hidden course';
-$string['hiddencoursecountplural'] = 'You have {$a} hidden courses';
+$string['hiddencoursecount'] = 'You have {$a->coursecount} hidden course ({$a->showalllink} | {$a->alwaysshowalllink})';
+$string['hiddencoursecountplural'] = 'You have {$a->coursecount} hidden courses ({$a->showalllink} | {$a->alwaysshowalllink})';
 $string['message'] = 'message';
 $string['messages'] = 'messages';
 $string['movecourse'] = 'Move course: {$a}';
