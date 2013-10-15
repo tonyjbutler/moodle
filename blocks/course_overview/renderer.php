@@ -215,13 +215,15 @@ class block_course_overview_renderer extends plugin_renderer_base {
         }
         $output = $this->output->box_start('notice');
         $plural = $total > 1 ? 'plural' : '';
-        $a = new stdClass();
-        $a->coursecount = $total;
-        $a->showalllink = html_writer::link(new moodle_url('/my/index.php', array('mynumber' => block_course_overview::SHOW_ALL_COURSES)),
-                get_string('showallcourses'));
-        $a->alwaysshowalllink = html_writer::link(new moodle_url('/my/index.php', array('mynumber' => 0)),
-                get_string('alwaysshowall', 'block_course_overview'));
-        $output .= get_string('hiddencoursecount'.$plural, 'block_course_overview', $a);
+        $output .= get_string('hiddencoursecount'.$plural, 'block_course_overview', $total);
+        // Get block configuration
+        $config = get_config('block_course_overview');
+        if (empty($config->forcedefaultmaxcourses)) {
+            $output .= ' ('.html_writer::link(new moodle_url('/my/index.php', array('mynumber' => block_course_overview::SHOW_ALL_COURSES)),
+                    get_string('showallcourses')).') |';
+            $output .= ' ('.html_writer::link(new moodle_url('/my/index.php', array('mynumber' => 0)),
+                    get_string('alwaysshowall', 'block_course_overview')).')';
+        }
         $output .= $this->output->box_end();
         return $output;
     }
