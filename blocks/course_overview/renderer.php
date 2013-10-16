@@ -220,8 +220,8 @@ class block_course_overview_renderer extends plugin_renderer_base {
         $config = get_config('block_course_overview');
         if (empty($config->forcedefaultmaxcourses)) {
             $output .= ' ('.html_writer::link(new moodle_url('/my/index.php', array('mynumber' => block_course_overview::SHOW_ALL_COURSES)),
-                    get_string('showallcourses')).') |';
-            $output .= ' ('.html_writer::link(new moodle_url('/my/index.php', array('mynumber' => 0)),
+                    get_string('showallcourses')).' | ';
+            $output .= html_writer::link(new moodle_url('/my/index.php', array('mynumber' => 0)),
                     get_string('alwaysshowall', 'block_course_overview')).')';
         }
         $output .= $this->output->box_end();
