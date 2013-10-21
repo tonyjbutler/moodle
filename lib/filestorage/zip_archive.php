@@ -321,6 +321,22 @@ class zip_archive extends file_archive {
         return $this->za->numFiles;
     }
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * Returns approximate number of files in archive. This may be a slight
+     * overestimate.
+     *
+     * @return int|bool Estimated number of files, or false if not opened
+     */
+    public function estimated_count() {
+        if (!isset($this->za)) {
+            return false;
+        }
+
+        return $this->za->numFiles;
+    }
+
+// ou-specific ends #8250 (until 2.6)
     /**
      * Add file into archive.
      *

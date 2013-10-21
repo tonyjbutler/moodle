@@ -25,6 +25,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+// ou-specific begins #8250 (until 2.6)
+require_once($CFG->dirroot . '/lib/filestorage/file_progress.php');
+
+// ou-specific ends #8250 (until 2.6)
 /**
  * Class representing local files stored in a sha1 file pool.
  *
@@ -47,6 +51,19 @@ class stored_file {
     /** @var repository repository plugin instance */
     private $repository;
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * @var int Indicates a file handle of the type returned by fopen.
+     */
+    const FILE_HANDLE_FOPEN = 0;
+
+    /**
+     * @var int Indicates a file handle of the type returned by gzopen.
+     */
+    const FILE_HANDLE_GZOPEN = 1;
+
+
+// ou-specific ends #8250 (until 2.6)
     /**
      * Constructor, this constructor should be called ONLY from the file_storage class!
      *
@@ -387,14 +404,33 @@ class stored_file {
      *
      * @return resource file handle
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function get_content_file_handle() {
+*/
+    public function get_content_file_handle($type = self::FILE_HANDLE_FOPEN) {
+// ou-specific ends #8250 (until 2.6)
         $path = $this->get_content_file_location();
         if (!is_readable($path)) {
             if (!$this->fs->try_content_recovery($this) or !is_readable($path)) {
                 throw new file_exception('storedfilecannotread', '', $path);
             }
         }
+// ou-specific begins #8250 (until 2.6)
+/*
         return fopen($path, 'rb'); // Binary reading only!!
+*/
+        switch ($type) {
+            case self::FILE_HANDLE_FOPEN:
+                // Binary reading.
+                return fopen($path, 'rb');
+            case self::FILE_HANDLE_GZOPEN:
+                // Binary reading of file in gz format.
+                return gzopen($path, 'rb');
+            default:
+                throw new coding_exception('Unexpected file handle type');
+        }
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**
@@ -480,11 +516,25 @@ class stored_file {
      *
      * @param file_packer $packer file packer instance
      * @param string $pathname target directory
+// ou-specific begins #8250 (until 2.6)
+     * @param file_progress $progress Progress indicator callback or null if not required
+// ou-specific ends #8250 (until 2.6)
      * @return array|bool list of processed files; false if error
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function extract_to_pathname(file_packer $packer, $pathname) {
+*/
+    public function extract_to_pathname(file_packer $packer, $pathname,
+            file_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         $archivefile = $this->get_content_file_location();
+// ou-specific begins #8250 (until 2.6)
+/*
         return $packer->extract_to_pathname($archivefile, $pathname);
+*/
+        return $packer->extract_to_pathname($archivefile, $pathname, null, $progress);
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**
@@ -497,11 +547,26 @@ class stored_file {
      * @param int $itemid item ID
      * @param string $pathbase path base
      * @param int $userid user ID
+// ou-specific begins #8250 (until 2.6)
+     * @param file_progress $progress Progress indicator callback or null if not required
+// ou-specific ends #8250 (until 2.6)
      * @return array|bool list of processed files; false if error
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function extract_to_storage(file_packer $packer, $contextid, $component, $filearea, $itemid, $pathbase, $userid = NULL) {
+*/
+    public function extract_to_storage(file_packer $packer, $contextid,
+            $component, $filearea, $itemid, $pathbase, $userid = null, file_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         $archivefile = $this->get_content_file_location();
+// ou-specific begins #8250 (until 2.6)
+/*
         return $packer->extract_to_storage($archivefile, $contextid, $component, $filearea, $itemid, $pathbase);
+*/
+        return $packer->extract_to_storage($archivefile, $contextid,
+                $component, $filearea, $itemid, $pathbase, $userid, $progress);
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**

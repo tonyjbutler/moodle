@@ -42,9 +42,19 @@ abstract class backup_helper {
     /**
      * Given one backupid, ensure its temp dir is completely empty
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     static public function clear_backup_dir($backupid) {
+*/
+    static public function clear_backup_dir($backupid, core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
+// ou-specific begins #8250 (until 2.6)
+/*
         if (!self::delete_dir_contents($CFG->tempdir . '/backup/' . $backupid)) {
+*/
+        if (!self::delete_dir_contents($CFG->tempdir . '/backup/' . $backupid, '', $progress)) {
+// ou-specific ends #8250 (until 2.6)
             throw new backup_helper_exception('cannot_empty_backup_temp_dir');
         }
         return true;
@@ -53,9 +63,19 @@ abstract class backup_helper {
     /**
      * Given one backupid, delete completely its temp dir
      */
+// ou-specific begins #8250 (until 2.6)
+/*
      static public function delete_backup_dir($backupid) {
+*/
+     static public function delete_backup_dir($backupid, core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
          global $CFG;
+// ou-specific begins #8250 (until 2.6)
+/*
          self::clear_backup_dir($backupid);
+*/
+         self::clear_backup_dir($backupid, $progress);
+// ou-specific ends #8250 (until 2.6)
          return rmdir($CFG->tempdir . '/backup/' . $backupid);
      }
 
@@ -64,9 +84,19 @@ abstract class backup_helper {
      * Copied originally from somewhere in the net.
      * TODO: Modernise this
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     static public function delete_dir_contents($dir, $excludeddir='') {
+*/
+    static public function delete_dir_contents($dir, $excludeddir='', core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
 
+// ou-specific begins #8250 (until 2.6)
+        if ($progress) {
+            $progress->progress();
+         }
+// ou-specific ends #8250 (until 2.6)
         if (!is_dir($dir)) {
             // if we've been given a directory that doesn't exist yet, return true.
             // this happens when we're trying to clear out a course that has only just
@@ -108,7 +138,12 @@ abstract class backup_helper {
         // Empty sub directories and then remove the directory
         for ($i=0; $i<count($dir_subdirs); $i++) {
             chmod($dir_subdirs[$i], $CFG->directorypermissions);
+// ou-specific begins #8250 (until 2.6)
+/*
             if (self::delete_dir_contents($dir_subdirs[$i]) == false) {
+*/
+            if (self::delete_dir_contents($dir_subdirs[$i], '', $progress) == false) {
+// ou-specific ends #8250 (until 2.6)
                 return false;
             } else {
                 if (remove_dir($dir_subdirs[$i]) == false) {
@@ -127,7 +162,12 @@ abstract class backup_helper {
     /**
      * Delete all the temp dirs older than the time specified
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     static public function delete_old_backup_dirs($deletefrom) {
+*/
+    static public function delete_old_backup_dirs($deletefrom, core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
 
         $status = true;
@@ -140,7 +180,12 @@ abstract class backup_helper {
                 //If directory, recurse
                 if (is_dir($file_path)) {
                     // $file is really the backupid
+// ou-specific begins #8250 (until 2.6)
+/*
                     $status = self::delete_backup_dir($file);
+*/
+                    $status = self::delete_backup_dir($file, $progress);
+// ou-specific ends #8250 (until 2.6)
                 //If file
                 } else {
                     unlink($file_path);
@@ -185,11 +230,22 @@ abstract class backup_helper {
      *
      * @throws moodle_exception in case of any problems
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     static public function store_backup_file($backupid, $filepath) {
+*/
+    static public function store_backup_file($backupid, $filepath, core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
 
         // First of all, get some information from the backup_controller to help us decide
+// ou-specific begins #8250 (until 2.6)
+/*
         list($dinfo, $cinfo, $sinfo) = backup_controller_dbops::get_moodle_backup_information($backupid);
+*/
+        list($dinfo, $cinfo, $sinfo) = backup_controller_dbops::get_moodle_backup_information(
+                $backupid, $progress);
+// ou-specific ends #8250 (until 2.6)
 
         // Extract useful information to decide
         $hasusers  = (bool)$sinfo['users']->value;     // Backup has users

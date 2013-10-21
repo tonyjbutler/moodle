@@ -73,7 +73,14 @@ abstract class backup_structure_step extends backup_step {
                                              // from xml_writer (blame serialized data!)
         }
         $xw = new xml_writer($xo, $xt);
+// ou-specific begins #8250 (until 2.6)
+/*
         $pr = new backup_structure_processor($xw);
+*/
+        $progress = $this->task->get_progress();
+        $progress->start_progress($this->get_name());
+        $pr = new backup_structure_processor($xw, $progress);
+// ou-specific ends #8250 (until 2.6)
 
         // Set processor variables from settings
         foreach ($this->get_settings() as $setting) {
@@ -105,6 +112,9 @@ abstract class backup_structure_step extends backup_step {
 
         // Close everything
         $xw->stop();
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
 
         // Destroy the structure. It helps PHP 5.2 memory a lot!
         $structure->destroy();

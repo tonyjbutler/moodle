@@ -67,6 +67,19 @@ abstract class base_task implements checksumable, executable, loggable {
         return $this->settings;
     }
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * Returns the weight of this task, an approximation of the amount of time
+     * it will take. By default this value is 1. It can be increased for longer
+     * tasks.
+     *
+     * @return int Weight
+     */
+    public function get_weight() {
+        return 1;
+    }
+
+// ou-specific ends #8250 (until 2.6)
     public function get_setting($name) {
         // First look in task settings
         $result = null;
@@ -111,6 +124,18 @@ abstract class base_task implements checksumable, executable, loggable {
         return $this->plan->get_logger();
     }
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * Gets the progress reporter, which can be used to report progress within
+     * the backup or restore process.
+     *
+     * @return core_backup_progress Progress reporting object
+     */
+    public function get_progress() {
+        return $this->plan->get_progress();
+    }
+
+// ou-specific ends #8250 (until 2.6)
     public function log($message, $level, $a = null, $depth = null, $display = false) {
         backup_helper::log($message, $level, $a, $depth, $display, $this->get_logger());
     }
@@ -149,6 +174,15 @@ abstract class base_task implements checksumable, executable, loggable {
         if ($this->executed) {
             throw new base_task_exception('base_task_already_executed', $this->name);
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Starts progress based on the weight of this task and number of steps.
+        $progress = $this->get_progress();
+        $progress->start_progress($this->get_name(), count($this->steps), $this->get_weight());
+        $done = 0;
+
+        // Execute all steps.
+// ou-specific ends #8250 (until 2.6)
         foreach ($this->steps as $step) {
             $result = $step->execute();
             // If step returns array, it will be forwarded to plan
@@ -156,11 +190,20 @@ abstract class base_task implements checksumable, executable, loggable {
             if (is_array($result) and !empty($result)) {
                 $this->add_result($result);
             }
+// ou-specific begins #8250 (until 2.6)
+            $done++;
+            $progress->progress($done);
+// ou-specific ends #8250 (until 2.6)
         }
         // Mark as executed if any step has been executed
         if (!empty($this->steps)) {
             $this->executed = true;
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Finish progress for this task.
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**

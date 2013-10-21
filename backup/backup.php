@@ -79,11 +79,19 @@ switch ($type) {
         print_error('unknownbackuptype');
 }
 
+// ou-specific begins #8250 (until 2.6)
+// Backup of large courses requires extra memory. Use the amount configured
+// in admin settings.
+raise_memory_limit(MEMORY_EXTRA);
+
+// ou-specific ends #8250 (until 2.6)
 if (!($bc = backup_ui::load_controller($backupid))) {
     $bc = new backup_controller($type, $id, backup::FORMAT_MOODLE,
                             backup::INTERACTIVE_YES, backup::MODE_GENERAL, $USER->id);
 }
 $backup = new backup_ui($bc);
+// ou-specific begins #8250 (until 2.6)
+/*
 $backup->process();
 if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
     $backup->execute();
@@ -92,16 +100,91 @@ if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
 }
 
 $PAGE->set_title($heading.': '.$backup->get_stage_name());
+*/
+$PAGE->set_title($heading);
+// ou-specific ends #8250 (until 2.6)
 $PAGE->set_heading($heading);
+// ou-specific begins #8250 (until 2.6)
+/*
 $PAGE->navbar->add($backup->get_stage_name());
+*/
+// ou-specific ends #8250 (until 2.6)
 
 $renderer = $PAGE->get_renderer('core','backup');
 echo $OUTPUT->header();
+// ou-specific begins #8250 (until 2.6)
+
+// Prepare a progress bar which can display optionally during long-running
+// operations while setting up the UI.
+$slowprogress = new core_backup_display_progress_if_slow(get_string('preparingui', 'backup'));
+
+$previous = optional_param('previous', false, PARAM_BOOL);
+if ($backup->get_stage() == backup_ui::STAGE_SCHEMA && !$previous) {
+    // After schema stage, we are probably going to get to the confirmation stage,
+    // The confirmation stage has 2 sets of progress, so this is needed to prevent
+    // it showing 2 progress bars.
+    $twobars = true;
+    $slowprogress->start_progress('', 2);
+} else {
+    $twobars = false;
+}
+$backup->get_controller()->set_progress($slowprogress);
+$backup->process();
+
+// ou-specific ends #8250 (until 2.6)
 if ($backup->enforce_changed_dependencies()) {
     debugging('Your settings have been altered due to unmet dependencies', DEBUG_DEVELOPER);
 }
+// ou-specific begins #8250 (until 2.6)
+
+$loghtml = '';
+if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
+    // Display an extra backup step bar so that we can show the 'processing' step first.
+    echo html_writer::start_div('', array('id' => 'executionprogress'));
+    echo $renderer->progress_bar($backup->get_progress_bar());
+    $backup->get_controller()->set_progress(new core_backup_display_progress());
+
+    // Prepare logger and add to end of chain.
+    $logger = new core_backup_html_logger(debugging('', DEBUG_DEVELOPER) ? backup::LOG_DEBUG : backup::LOG_INFO);
+    $backup->get_controller()->add_logger($logger);
+
+    // Carry out actual backup.
+    $backup->execute();
+
+    // Get HTML from logger.
+    $loghtml = $logger->get_html();
+
+    // Hide the progress display and first backup step bar (the 'finished' step will show next).
+    echo html_writer::end_div();
+    echo html_writer::script('document.getElementById("executionprogress").style.display = "none";');
+} else {
+    $backup->save_controller();
+}
+
+// Displaying UI can require progress reporting, so do it here before outputting
+// the backup stage bar (as part of the existing progress bar, if required).
+$ui = $backup->display($renderer);
+if ($twobars) {
+    $slowprogress->end_progress();
+}
+
+// ou-specific ends #8250 (until 2.6)
 echo $renderer->progress_bar($backup->get_progress_bar());
+// ou-specific begins #8250 (until 2.6)
+/*
 echo $backup->display($renderer);
+*/
+
+echo $ui;
+// ou-specific ends #8250 (until 2.6)
 $backup->destroy();
 unset($backup);
+// ou-specific begins #8250 (until 2.6)
+
+// Display log data if there was any.
+if ($loghtml != '') {
+    echo $renderer->log_display($loghtml);
+}
+
+// ou-specific ends #8250 (until 2.6)
 echo $OUTPUT->footer();

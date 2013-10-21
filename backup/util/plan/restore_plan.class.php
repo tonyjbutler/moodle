@@ -94,6 +94,18 @@ class restore_plan extends base_plan implements loggable {
         return $this->controller->get_logger();
     }
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * Gets the progress reporter, which can be used to report progress within
+     * the backup or restore process.
+     *
+     * @return core_backup_progress Progress reporting object
+     */
+    public function get_progress() {
+        return $this->controller->get_progress();
+    }
+
+// ou-specific ends #8250 (until 2.6)
     public function get_info() {
         return $this->controller->get_info();
     }

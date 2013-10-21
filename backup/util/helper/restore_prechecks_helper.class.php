@@ -43,7 +43,12 @@ abstract class restore_prechecks_helper {
      *
      * Returns empty array or warnings/errors array
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function execute_prechecks($controller, $droptemptablesafter = false) {
+*/
+    public static function execute_prechecks(restore_controller $controller, $droptemptablesafter = false) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
 
         $errors = array();
@@ -57,16 +62,39 @@ abstract class restore_prechecks_helper {
         $courseid = $controller->get_courseid();
         $userid = $controller->get_userid();
         $rolemappings = $controller->get_info()->role_mappings;
+// ou-specific begins #8250 (until 2.6)
+        $progress = $controller->get_progress();
+
+        // Start tracking progress. There are currently 8 major steps, corresponding
+        // to $majorstep++ lines in this code; we keep track of the total so as to
+        // verify that it's still correct. If you add a major step, you need to change
+        // the total here.
+        $majorstep = 1;
+        $majorsteps = 8;
+        $progress->start_progress('Carrying out pre-restore checks', $majorsteps);
+
+// ou-specific ends #8250 (until 2.6)
         // Load all the included tasks to look for inforef.xml files
         $inforeffiles = array();
         $tasks = restore_dbops::get_included_tasks($restoreid);
+// ou-specific begins #8250 (until 2.6)
+        $progress->start_progress('Listing inforef files', count($tasks));
+        $minorstep = 1;
+// ou-specific ends #8250 (until 2.6)
         foreach ($tasks as $task) {
             // Add the inforef.xml file if exists
             $inforefpath = $task->get_taskbasepath() . '/inforef.xml';
             if (file_exists($inforefpath)) {
                 $inforeffiles[] = $inforefpath;
             }
+// ou-specific begins #8250 (until 2.6)
+            $progress->progress($minorstep++);
+// ou-specific ends #8250 (until 2.6)
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+        $progress->progress($majorstep++);
+// ou-specific ends #8250 (until 2.6)
 
         // Create temp tables
         restore_controller_dbops::create_restore_temp_tables($controller->get_restoreid());
@@ -108,18 +136,50 @@ abstract class restore_prechecks_helper {
         }
 
         // Load all the inforef files, we are going to need them
+// ou-specific begins #8250 (until 2.6)
+        $progress->start_progress('Loading temporary IDs', count($inforeffiles));
+        $minorstep = 1;
+// ou-specific ends #8250 (until 2.6)
         foreach ($inforeffiles as $inforeffile) {
+// ou-specific begins #8250 (until 2.6)
+/*
             restore_dbops::load_inforef_to_tempids($restoreid, $inforeffile); // Load each inforef file to temp_ids
+*/
+            // Load each inforef file to temp_ids.
+            restore_dbops::load_inforef_to_tempids($restoreid, $inforeffile, $progress);
+            $progress->progress($minorstep++);
+// ou-specific ends #8250 (until 2.6)
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+        $progress->progress($majorstep++);
+// ou-specific ends #8250 (until 2.6)
 
         // If restoring users, check we are able to create all them
         if ($restoreusers) {
             $file = $controller->get_plan()->get_basepath() . '/users.xml';
+// ou-specific begins #8250 (until 2.6)
+/*
             restore_dbops::load_users_to_tempids($restoreid, $file); // Load needed users to temp_ids
             if ($problems = restore_dbops::precheck_included_users($restoreid, $courseid, $userid, $samesite)) {
+*/
+            // Load needed users to temp_ids.
+            restore_dbops::load_users_to_tempids($restoreid, $file, $progress);
+            $progress->progress($majorstep++);
+            if ($problems = restore_dbops::precheck_included_users($restoreid, $courseid, $userid, $samesite, $progress)) {
+// ou-specific ends #8250 (until 2.6)
                 $errors = array_merge($errors, $problems);
             }
+// ou-specific begins #8250 (until 2.6)
+        } else {
+            // To ensure consistent number of steps in progress tracking,
+            // mark progress even though we didn't do anything.
+            $progress->progress($majorstep++);
+// ou-specific ends #8250 (until 2.6)
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->progress($majorstep++);
+// ou-specific ends #8250 (until 2.6)
 
         // Note: restore won't create roles at all. Only mapping/skip!
         $file = $controller->get_plan()->get_basepath() . '/roles.xml';
@@ -128,6 +188,9 @@ abstract class restore_prechecks_helper {
             $errors = array_key_exists('errors', $problems) ? array_merge($errors, $problems['errors']) : $errors;
             $warnings = array_key_exists('warnings', $problems) ? array_merge($warnings, $problems['warnings']) : $warnings;
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->progress($majorstep++);
+// ou-specific ends #8250 (until 2.6)
 
         // Check we are able to restore and the categories and questions
         $file = $controller->get_plan()->get_basepath() . '/questions.xml';
@@ -136,6 +199,9 @@ abstract class restore_prechecks_helper {
             $errors = array_key_exists('errors', $problems) ? array_merge($errors, $problems['errors']) : $errors;
             $warnings = array_key_exists('warnings', $problems) ? array_merge($warnings, $problems['warnings']) : $warnings;
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->progress($majorstep++);
+// ou-specific ends #8250 (until 2.6)
 
         // Prepare results and return
         $results = array();
@@ -149,6 +215,16 @@ abstract class restore_prechecks_helper {
         if (!empty($results) || $droptemptablesafter) {
             restore_controller_dbops::drop_restore_temp_tables($controller->get_restoreid());
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Finish progress and check we got the initial number of steps right.
+        $progress->progress($majorstep++);
+        if ($majorstep != $majorsteps) {
+            throw new coding_exception('Progress step count wrong: ' . $majorstep);
+        }
+        $progress->end_progress();
+
+// ou-specific ends #8250 (until 2.6)
         return $results;
     }
 }

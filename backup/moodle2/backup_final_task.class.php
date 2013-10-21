@@ -157,6 +157,13 @@ class backup_final_task extends backup_task {
         $this->built = true;
     }
 
+// ou-specific begins #8250 (until 2.6)
+    public function get_weight() {
+        // The final task takes ages, so give it 20 times the weight of a normal task.
+        return 20;
+    }
+
+// ou-specific ends #8250 (until 2.6)
 // Protected API starts here
 
     /**

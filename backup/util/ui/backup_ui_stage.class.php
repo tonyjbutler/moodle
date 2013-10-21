@@ -170,6 +170,13 @@ class backup_ui_stage_initial extends backup_ui_stage {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_ui_stage_schema extends backup_ui_stage {
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * @var int Maximum number of settings to add to form at once
+     */
+    const MAX_SETTINGS_BATCH = 1000;
+
+// ou-specific ends #8250 (until 2.6)
     /**
      * Schema stage constructor
      * @param backup_moodleform $ui
@@ -236,6 +243,16 @@ class backup_ui_stage_schema extends backup_ui_stage {
             $courseheading = false;
             $add_settings = array();
             $dependencies = array();
+// ou-specific begins #8250 (until 2.6)
+
+            // Track progress through each stage.
+            $progress = $this->ui->get_controller()->get_progress();
+            $progress->start_progress('Initialise stage form', 3);
+
+            // Get settings for all tasks.
+            $progress->start_progress('', count($tasks));
+            $done = 1;
+// ou-specific ends #8250 (until 2.6)
             foreach ($tasks as $task) {
                 if (!($task instanceof backup_root_task)) {
                     if (!$courseheading) {
@@ -263,11 +280,48 @@ class backup_ui_stage_schema extends backup_ui_stage {
                         }
                     }
                 }
+// ou-specific begins #8250 (until 2.6)
+                // Update progress.
+                $progress->progress($done++);
+// ou-specific ends #8250 (until 2.6)
             }
+// ou-specific begins #8250 (until 2.6)
+/*
             $form->add_settings($add_settings);
+*/
+            $progress->end_progress();
+
+            // Add settings for tasks in batches of up to 1000. Adding settings
+            // in larger batches improves performance, but if it takes too long,
+            // we won't be able to update the progress bar so the backup might
+            // time out. 1000 is chosen to balance this.
+            $numsettings = count($add_settings);
+            $progress->start_progress('', ceil($numsettings / self::MAX_SETTINGS_BATCH));
+            $start = 0;
+            $done = 1;
+            while($start < $numsettings) {
+                $length = min(self::MAX_SETTINGS_BATCH, $numsettings - $start);
+                $form->add_settings(array_slice($add_settings, $start, $length));
+                $start += $length;
+                $progress->progress($done++);
+            }
+            $progress->end_progress();
+
+            $progress->start_progress('', count($dependencies));
+            $done = 1;
+// ou-specific ends #8250 (until 2.6)
             foreach ($dependencies as $depsetting) {
                 $form->add_dependencies($depsetting);
+// ou-specific begins #8250 (until 2.6)
+                $progress->progress($done++);
+// ou-specific ends #8250 (until 2.6)
             }
+// ou-specific begins #8250 (until 2.6)
+            $progress->end_progress();
+
+            // End overall progress through creating form.
+            $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
             $this->stageform = $form;
         }
         return $this->stageform;
@@ -357,7 +411,18 @@ class backup_ui_stage_confirmation extends backup_ui_stage {
                 }
             }
 
+// ou-specific begins #8250 (until 2.6)
+/*
             foreach ($this->ui->get_tasks() as $task) {
+*/
+            // Track progress through tasks.
+            $progress = $this->ui->get_controller()->get_progress();
+            $tasks = $this->ui->get_tasks();
+            $progress->start_progress('initialise_stage_form', count($tasks));
+            $done = 1;
+
+            foreach ($tasks as $task) {
+// ou-specific ends #8250 (until 2.6)
                 if ($task instanceof backup_root_task) {
                     // If its a backup root add a root settings heading to group nicely
                     $form->add_heading('rootsettings', get_string('rootsettings', 'backup'));
@@ -373,7 +438,14 @@ class backup_ui_stage_confirmation extends backup_ui_stage {
                         $form->add_fixed_setting($setting, $task);
                     }
                 }
+// ou-specific begins #8250 (until 2.6)
+                // Update progress.
+                $progress->progress($done++);
+// ou-specific ends #8250 (until 2.6)
             }
+// ou-specific begins #8250 (until 2.6)
+            $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
             $this->stageform = $form;
         }
         return $this->stageform;

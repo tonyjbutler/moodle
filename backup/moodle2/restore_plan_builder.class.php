@@ -97,6 +97,9 @@ abstract class restore_plan_builder {
         // preloading information to temp table
         // and other init tasks
         $plan->add_task(new restore_root_task('root_task'));
+// ou-specific begins #8250 (until 2.6)
+        $controller->get_progress()->progress();
+// ou-specific ends #8250 (until 2.6)
 
         switch ($controller->get_type()) {
             case backup::TYPE_1ACTIVITY:
@@ -115,6 +118,9 @@ abstract class restore_plan_builder {
         // conversion...)
         // and perform other various final actions.
         $plan->add_task(new restore_final_task('final_task'));
+// ou-specific begins #8250 (until 2.6)
+        $controller->get_progress()->progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
 
@@ -134,6 +140,9 @@ abstract class restore_plan_builder {
         // as far as the module can be missing on restore
         if ($task = restore_factory::get_restore_activity_task($infoactivity)) { // can be missing
             $plan->add_task($task);
+// ou-specific begins #8250 (until 2.6)
+            $controller->get_progress()->progress();
+// ou-specific ends #8250 (until 2.6)
 
             // For the given activity path, add as many block tasks as necessary
             // TODO: Add blocks, we need to introspect xml here
@@ -141,6 +150,9 @@ abstract class restore_plan_builder {
             foreach ($blocks as $basepath => $name) {
                 if ($task = restore_factory::get_restore_block_task($name, $basepath)) {
                     $plan->add_task($task);
+// ou-specific begins #8250 (until 2.6)
+                    $controller->get_progress()->progress();
+// ou-specific ends #8250 (until 2.6)
                 } else {
                     // TODO: Debug information about block not supported
                 }
@@ -163,6 +175,9 @@ abstract class restore_plan_builder {
         // Add the section task, responsible for restoring
         // all the section related information
         $plan->add_task(restore_factory::get_restore_section_task($infosection));
+// ou-specific begins #8250 (until 2.6)
+        $controller->get_progress()->progress();
+// ou-specific ends #8250 (until 2.6)
         // For the given section, add as many activity tasks as necessary
         foreach ($info->activities as $activityid => $activity) {
             if ($activity->sectionid != $infosection->sectionid) {
@@ -188,6 +203,9 @@ abstract class restore_plan_builder {
         // all the course related information
         $task = restore_factory::get_restore_course_task($info->course, $courseid);
         $plan->add_task($task);
+// ou-specific begins #8250 (until 2.6)
+        $controller->get_progress()->progress();
+// ou-specific ends #8250 (until 2.6)
 
         // For the given course path, add as many block tasks as necessary
         // TODO: Add blocks, we need to introspect xml here
@@ -195,6 +213,9 @@ abstract class restore_plan_builder {
         foreach ($blocks as $basepath => $name) {
             if ($task = restore_factory::get_restore_block_task($name, $basepath)) {
                 $plan->add_task($task);
+// ou-specific begins #8250 (until 2.6)
+                $controller->get_progress()->progress();
+// ou-specific ends #8250 (until 2.6)
             } else {
                 // TODO: Debug information about block not supported
             }

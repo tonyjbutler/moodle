@@ -131,9 +131,20 @@ abstract class backup_structure_dbops extends backup_dbops {
      * Moves all the existing 'item' annotations to their final 'itemfinal' ones
      * for a given backup.
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function move_annotations_to_final($backupid, $itemname) {
+*/
+    public static function move_annotations_to_final($backupid, $itemname, core_backup_progress $progress) {
+// ou-specific ends #8250 (until 2.6)
         global $DB;
+// ou-specific begins #8250 (until 2.6)
+        $progress->start_progress('move_annotations_to_final');
+// ou-specific ends #8250 (until 2.6)
         $rs = $DB->get_recordset('backup_ids_temp', array('backupid' => $backupid, 'itemname' => $itemname));
+// ou-specific begins #8250 (until 2.6)
+        $progress->progress();
+// ou-specific ends #8250 (until 2.6)
         foreach($rs as $annotation) {
             // If corresponding 'itemfinal' annotation does not exist, update 'item' to 'itemfinal'
             if (! $DB->record_exists('backup_ids_temp', array('backupid' => $backupid,
@@ -141,10 +152,16 @@ abstract class backup_structure_dbops extends backup_dbops {
                                                               'itemid' => $annotation->itemid))) {
                 $DB->set_field('backup_ids_temp', 'itemname', $itemname . 'final', array('id' => $annotation->id));
             }
+// ou-specific begins #8250 (until 2.6)
+            $progress->progress();
+// ou-specific ends #8250 (until 2.6)
         }
         $rs->close();
         // All the remaining $itemname annotations can be safely deleted
         $DB->delete_records('backup_ids_temp', array('backupid' => $backupid, 'itemname' => $itemname));
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**

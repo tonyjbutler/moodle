@@ -52,7 +52,14 @@ class zip_packer extends file_packer {
      * @param bool $ignoreinvalidfiles true means ignore missing or invalid files, false means abort on any error
      * @return stored_file|bool false if error stored_file instance if ok
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function archive_to_storage(array $files, $contextid, $component, $filearea, $itemid, $filepath, $filename, $userid = NULL, $ignoreinvalidfiles=true) {
+*/
+    public function archive_to_storage(array $files, $contextid,
+            $component, $filearea, $itemid, $filepath, $filename,
+            $userid = NULL, $ignoreinvalidfiles=true, file_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
 
         $fs = get_file_storage();
@@ -60,7 +67,12 @@ class zip_packer extends file_packer {
         check_dir_exists($CFG->tempdir.'/zip');
         $tmpfile = tempnam($CFG->tempdir.'/zip', 'zipstor');
 
+// ou-specific begins #8250 (until 2.6)
+/*
         if ($result = $this->archive_to_pathname($files, $tmpfile, $ignoreinvalidfiles)) {
+*/
+        if ($result = $this->archive_to_pathname($files, $tmpfile, $ignoreinvalidfiles, $progress)) {
+// ou-specific ends #8250 (until 2.6)
             if ($file = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename)) {
                 if (!$file->delete()) {
                     @unlink($tmpfile);
@@ -89,9 +101,18 @@ class zip_packer extends file_packer {
      * @param array $files array with zip paths as keys (archivepath=>ospathname or archivepath=>stored_file or archivepath=>array('content_as_string'))
      * @param string $archivefile path to target zip file
      * @param bool $ignoreinvalidfiles true means ignore missing or invalid files, false means abort on any error
+// ou-specific begins #8250 (until 2.6)
+     * @param file_progress $progress Progress indicator callback or null if not required
+// ou-specific ends #8250 (until 2.6)
      * @return bool true if file created, false if not
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function archive_to_pathname(array $files, $archivefile, $ignoreinvalidfiles=true) {
+*/
+    public function archive_to_pathname(array $files, $archivefile,
+            $ignoreinvalidfiles=true, file_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         $ziparch = new zip_archive();
         if (!$ziparch->open($archivefile, file_archive::OVERWRITE)) {
             return false;
@@ -101,6 +122,13 @@ class zip_packer extends file_packer {
         foreach ($files as $archivepath => $file) {
             $archivepath = trim($archivepath, '/');
 
+// ou-specific begins #8250 (until 2.6)
+            // Record progress each time around this loop.
+            if ($progress) {
+                $progress->progress();
+            }
+
+// ou-specific ends #8250 (until 2.6)
             if (is_null($file)) {
                 // Directories have null as content.
                 if (!$ziparch->add_directory($archivepath.'/')) {
@@ -112,7 +140,12 @@ class zip_packer extends file_packer {
                 }
 
             } else if (is_string($file)) {
+// ou-specific begins #8250 (until 2.6)
+/*
                 if (!$this->archive_pathname($ziparch, $archivepath, $file)) {
+*/
+                if (!$this->archive_pathname($ziparch, $archivepath, $file, $progress)) {
+// ou-specific ends #8250 (until 2.6)
                     debugging("Can not zip '$archivepath' file", DEBUG_DEVELOPER);
                     if (!$ignoreinvalidfiles) {
                         $abort = true;
@@ -131,7 +164,12 @@ class zip_packer extends file_packer {
                 }
 
             } else {
+// ou-specific begins #8250 (until 2.6)
+/*
                 if (!$this->archive_stored($ziparch, $archivepath, $file)) {
+*/
+                if (!$this->archive_stored($ziparch, $archivepath, $file, $progress)) {
+// ou-specific ends #8250 (until 2.6)
                     debugging("Can not zip '$archivepath' file", DEBUG_DEVELOPER);
                     if (!$ignoreinvalidfiles) {
                         $abort = true;
@@ -162,7 +200,12 @@ class zip_packer extends file_packer {
      * @param stored_file $file stored_file object
      * @return bool success
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     private function archive_stored($ziparch, $archivepath, $file) {
+*/
+    private function archive_stored($ziparch, $archivepath, $file, file_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         $result = $file->archive_file($ziparch, $archivepath);
         if (!$result) {
             return false;
@@ -177,6 +220,13 @@ class zip_packer extends file_packer {
         $files = $fs->get_directory_files($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(),
                                           $file->get_filepath(), true, true);
         foreach ($files as $file) {
+// ou-specific begins #8250 (until 2.6)
+            // Record progress for each file.
+            if ($progress) {
+                $progress->progress();
+            }
+
+// ou-specific ends #8250 (until 2.6)
             $path = $file->get_filepath();
             $path = substr($path, $baselength);
             $path = $archivepath.'/'.$path;
@@ -198,7 +248,18 @@ class zip_packer extends file_packer {
      * @param string $file path name of the file
      * @return bool success
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     private function archive_pathname($ziparch, $archivepath, $file) {
+*/
+    private function archive_pathname($ziparch, $archivepath, $file,
+            file_progress $progress = null) {
+        // Record progress each time this function is called.
+        if ($progress) {
+            $progress->progress();
+        }
+
+// ou-specific ends #8250 (until 2.6)
         if (!file_exists($file)) {
             return false;
         }
@@ -219,7 +280,12 @@ class zip_packer extends file_packer {
                     continue;
                 }
                 $newpath = $archivepath.'/'.$file->getFilename();
+// ou-specific begins #8250 (until 2.6)
+/*
                 $this->archive_pathname($ziparch, $newpath, $file->getPathname());
+*/
+                $this->archive_pathname($ziparch, $newpath, $file->getPathname(), $progress);
+// ou-specific ends #8250 (until 2.6)
             }
             unset($files); // Release file handles.
             return true;
@@ -236,11 +302,22 @@ class zip_packer extends file_packer {
      *              start with a /. Example: array('myfile.txt', 'directory/anotherfile.txt')
      * @return bool|array list of processed files; false if error
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function extract_to_pathname($archivefile, $pathname, array $onlyfiles = null) {
+*/
+    public function extract_to_pathname($archivefile, $pathname,
+            array $onlyfiles = null, file_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
 
         if (!is_string($archivefile)) {
+// ou-specific begins #8250 (until 2.6)
+/*
             return $archivefile->extract_to_pathname($this, $pathname);
+ */
+            return $archivefile->extract_to_pathname($this, $pathname, $progress);
+// ou-specific ends #8250 (until 2.6)
         }
 
         $processed = array();
@@ -254,7 +331,23 @@ class zip_packer extends file_packer {
             return false;
         }
 
+// ou-specific begins #8250 (until 2.6)
+        // Get the number of files (approx).
+        if ($progress) {
+            $approxmax = $ziparch->estimated_count();
+            $done = 0;
+        }
+
+// ou-specific ends #8250 (until 2.6)
         foreach ($ziparch as $info) {
+// ou-specific begins #8250 (until 2.6)
+            // Notify progress.
+            if ($progress) {
+                $progress->progress($done, $approxmax);
+                $done++;
+            }
+
+// ou-specific ends #8250 (until 2.6)
             $size = $info->size;
             $name = $info->pathname;
 
@@ -339,11 +432,24 @@ class zip_packer extends file_packer {
      * @param int $userid user ID
      * @return array|bool list of processed files; false if error
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function extract_to_storage($archivefile, $contextid, $component, $filearea, $itemid, $pathbase, $userid = NULL) {
+*/
+    public function extract_to_storage($archivefile, $contextid,
+            $component, $filearea, $itemid, $pathbase, $userid = NULL,
+            file_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG;
 
         if (!is_string($archivefile)) {
+// ou-specific begins #8250 (until 2.6)
+/*
             return $archivefile->extract_to_storage($this, $contextid, $component, $filearea, $itemid, $pathbase, $userid);
+*/
+            return $archivefile->extract_to_storage($this, $contextid, $component,
+                    $filearea, $itemid, $pathbase, $userid, $progress);
+// ou-specific ends #8250 (until 2.6)
         }
 
         check_dir_exists($CFG->tempdir.'/zip');
@@ -359,7 +465,23 @@ class zip_packer extends file_packer {
             return false;
         }
 
+// ou-specific begins #8250 (until 2.6)
+        // Get the number of files (approx).
+        if ($progress) {
+            $approxmax = $ziparch->estimated_count();
+            $done = 0;
+        }
+
+// ou-specific ends #8250 (until 2.6)
         foreach ($ziparch as $info) {
+// ou-specific begins #8250 (until 2.6)
+            // Notify progress.
+            if ($progress) {
+                $progress->progress($done, $approxmax);
+                $done++;
+            }
+
+// ou-specific ends #8250 (until 2.6)
             $size = $info->size;
             $name = $info->pathname;
 

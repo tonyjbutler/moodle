@@ -162,12 +162,39 @@ abstract class base_plan implements checksumable, executable {
         if (!$this->built) {
             throw new base_plan_exception('base_plan_not_built');
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Calculate the total weight of all tasks and start progress tracking.
+        $progress = $this->get_progress();
+        $totalweight = 0;
+        foreach ($this->tasks as $task) {
+            $totalweight += $task->get_weight();
+        }
+        $progress->start_progress($this->get_name(), $totalweight);
+
+        // Build and execute all tasks.
+// ou-specific ends #8250 (until 2.6)
         foreach ($this->tasks as $task) {
             $task->build();
             $task->execute();
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Finish progress tracking.
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * Gets the progress reporter, which can be used to report progress within
+     * the backup or restore process.
+     *
+     * @return core_backup_progress Progress reporting object
+     */
+    public abstract function get_progress();
+
+// ou-specific ends #8250 (until 2.6)
     /**
      * Destroy all circular references. It helps PHP 5.2 a lot!
      */
