@@ -5057,6 +5057,7 @@ class assign {
                 }
             } else {
                 $grademenu = make_grades_menu($this->get_instance()->grade);
+                $grademenu = array('-1'=>get_string('nograde')) + $grademenu;
                 if (count($grademenu) > 0) {
                     $gradingelement = $mform->addElement('select', 'grade', get_string('grade') . ':', $grademenu);
 
