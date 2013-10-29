@@ -49,6 +49,9 @@ $string['backupformatmoodle2'] = 'Moodle 2';
 $string['backupformatimscc1'] = 'IMS Common Cartridge 1.0';
 $string['backupformatimscc11'] = 'IMS Common Cartridge 1.1';
 $string['backupformatunknown'] = 'Unknown format';
+// ou-specific begins #8250 (until 2.6)
+$string['backuplog'] = 'Technical information and warnings';
+// ou-specific ends #8250 (until 2.6)
 $string['backupmode'] = 'Mode';
 $string['backupmode10'] = 'General';
 $string['backupmode20'] = 'Import';
@@ -140,6 +143,9 @@ $string['generalroleassignments'] = 'Include role assignments';
 $string['generalsettings'] = 'General backup settings';
 $string['generaluserscompletion'] = 'Include user completion information';
 $string['generalusers'] = 'Include users';
+// ou-specific begins #8250 (until 2.6)
+$string['hidetypes'] = 'Hide type options';
+// ou-specific ends #8250 (until 2.6)
 $string['importgeneralsettings'] = 'General import defaults';
 $string['importgeneralmaxresults'] = 'Maximum number of courses listed for import';
 $string['importgeneralmaxresults_desc'] = 'This controls the number of courses that are listed during the first step of the import process';
@@ -174,6 +180,10 @@ $string['nomatchingcourses'] = 'There are no courses to display';
 $string['norestoreoptions'] = 'There are no categories or existing courses you can restore to.';
 $string['originalwwwroot'] = 'URL of backup';
 $string['previousstage'] = 'Previous';
+// ou-specific begins #8250 (until 2.6)
+$string['preparingui'] = 'Preparing to display page';
+$string['preparingdata'] = 'Preparing data';
+// ou-specific ends #8250 (until 2.6)
 $string['qcategory2coursefallback'] = 'The questions category "{$a->name}", originally at system/course category context in backup file, will be created at course context by restore';
 $string['qcategorycannotberestored'] = 'The questions category "{$a->name}" cannot be created by restore';
 $string['question2coursefallback'] = 'The questions category "{$a->name}", originally at system/course category context in backup file, will be created at course context by restore';
@@ -244,6 +254,9 @@ $string['setting_course_shortname'] = 'Course short name';
 $string['setting_course_startdate'] = 'Course start date';
 $string['setting_keep_roles_and_enrolments'] = 'Keep current roles and enrolments';
 $string['setting_keep_groups_and_groupings'] = 'Keep current groups and groupings';
+// ou-specific begins #8250 (until 2.6)
+$string['showtypes'] = 'Show type options';
+// ou-specific ends #8250 (until 2.6)
 $string['skiphidden'] = 'Skip hidden courses';
 $string['skiphiddenhelp'] = 'Choose whether or not to skip hidden courses';
 $string['skipmodifdays'] = 'Skip courses not modified since';

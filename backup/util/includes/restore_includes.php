@@ -58,8 +58,17 @@ require_once($CFG->dirroot . '/backup/util/checks/restore_check.class.php');
 require_once($CFG->dirroot . '/backup/util/loggers/base_logger.class.php');
 require_once($CFG->dirroot . '/backup/util/loggers/error_log_logger.class.php');
 require_once($CFG->dirroot . '/backup/util/loggers/file_logger.class.php');
+// ou-specific begins #8250 (until 2.6)
+require_once($CFG->dirroot . '/backup/util/loggers/core_backup_html_logger.class.php');
+// ou-specific ends #8250 (until 2.6)
 require_once($CFG->dirroot . '/backup/util/loggers/database_logger.class.php');
 require_once($CFG->dirroot . '/backup/util/loggers/output_indented_logger.class.php');
+// ou-specific begins #8250 (until 2.6)
+require_once($CFG->dirroot . '/backup/util/progress/core_backup_progress.class.php');
+require_once($CFG->dirroot . '/backup/util/progress/core_backup_null_progress.class.php');
+require_once($CFG->dirroot . '/backup/util/progress/core_backup_display_progress.class.php');
+require_once($CFG->dirroot . '/backup/util/progress/core_backup_display_progress_if_slow.class.php');
+// ou-specific ends #8250 (until 2.6)
 require_once($CFG->dirroot . '/backup/util/factories/backup_factory.class.php');
 require_once($CFG->dirroot . '/backup/util/factories/restore_factory.class.php');
 require_once($CFG->dirroot . '/backup/util/helper/backup_helper.class.php');
@@ -80,6 +89,9 @@ require_once($CFG->dirroot . '/backup/util/plan/restore_step.class.php');
 require_once($CFG->dirroot . '/backup/util/plan/restore_structure_step.class.php');
 require_once($CFG->dirroot . '/backup/util/plan/restore_execution_step.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/restore_plan_builder.class.php');
+// ou-specific begins #8250 (until 2.6)
+require_once($CFG->dirroot . '/backup/controller/base_controller.class.php');
+// ou-specific ends #8250 (until 2.6)
 require_once($CFG->dirroot . '/backup/controller/restore_controller.class.php');
 require_once($CFG->dirroot . '/backup/util/ui/base_moodleform.class.php');
 require_once($CFG->dirroot . '/backup/util/ui/base_ui.class.php');

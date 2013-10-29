@@ -67,6 +67,13 @@ class progressive_parser {
     protected $prevlevel;  // level of the previous tag processed - to detect pushing places
     protected $currtag;    // name/value/attributes of the tag being processed
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * @var core_backup_progress Progress tracker called for each action
+     */
+    protected $progress;
+
+// ou-specific ends #8250 (until 2.6)
     public function __construct($case_folding = false) {
         $this->xml_parser = xml_parser_create('UTF-8');
         xml_parser_set_option($this->xml_parser, XML_OPTION_CASE_FOLDING, $case_folding);
@@ -118,6 +125,20 @@ class progressive_parser {
         $this->processor = $processor;
     }
 
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * Sets the progress tracker for the parser. If set, the tracker will be
+     * called to report indeterminate progress for each chunk of XML.
+     *
+     * The caller should have already called start_progress on the progress tracker.
+     *
+     * @param core_backup_progress $progress Progress tracker
+     */
+    public function set_progress(core_backup_progress $progress) {
+        $this->progress = $progress;
+    }
+
+// ou-specific ends #8250 (until 2.6)
     /*
      * Process the XML, delegating found chunks to the @progressive_parser_processor
      */
@@ -167,6 +188,12 @@ class progressive_parser {
 
     protected function publish($data) {
         $this->processor->receive_chunk($data);
+// ou-specific begins #8250 (until 2.6)
+        if (!empty($this->progress)) {
+            // Report indeterminate progress.
+            $this->progress->progress();
+        }
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**

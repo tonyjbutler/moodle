@@ -110,17 +110,40 @@ abstract class restore_dbops {
     /**
      * Load one inforef.xml file to backup_ids table for future reference
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function load_inforef_to_tempids($restoreid, $inforeffile) {
+*/
+    public static function load_inforef_to_tempids($restoreid, $inforeffile,
+            core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
 
         if (!file_exists($inforeffile)) { // Shouldn't happen ever, but...
             throw new backup_helper_exception('missing_inforef_xml_file', $inforeffile);
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Set up progress tracking (indeterminate).
+        if (!$progress) {
+            $progress = new core_backup_null_progress();
+        }
+        $progress->start_progress('Loading inforef.xml file');
+
+// ou-specific ends #8250 (until 2.6)
         // Let's parse, custom processor will do its work, sending info to DB
         $xmlparser = new progressive_parser();
         $xmlparser->set_file($inforeffile);
         $xmlprocessor = new restore_inforef_parser_processor($restoreid);
         $xmlparser->set_processor($xmlprocessor);
+// ou-specific begins #8250 (until 2.6)
+        $xmlparser->set_progress($progress);
+// ou-specific ends #8250 (until 2.6)
         $xmlparser->process();
+// ou-specific begins #8250 (until 2.6)
+
+        // Finish progress
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**
@@ -402,17 +425,40 @@ abstract class restore_dbops {
     /**
      * Load the needed users.xml file to backup_ids table for future reference
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function load_users_to_tempids($restoreid, $usersfile) {
+*/
+    public static function load_users_to_tempids($restoreid, $usersfile,
+            core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
 
         if (!file_exists($usersfile)) { // Shouldn't happen ever, but...
             throw new backup_helper_exception('missing_users_xml_file', $usersfile);
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Set up progress tracking (indeterminate).
+        if (!$progress) {
+            $progress = new core_backup_null_progress();
+        }
+        $progress->start_progress('Loading users into temporary table');
+
+// ou-specific ends #8250 (until 2.6)
         // Let's parse, custom processor will do its work, sending info to DB
         $xmlparser = new progressive_parser();
         $xmlparser->set_file($usersfile);
         $xmlprocessor = new restore_users_parser_processor($restoreid);
         $xmlparser->set_processor($xmlprocessor);
+// ou-specific begins #8250 (until 2.6)
+        $xmlparser->set_progress($progress);
+// ou-specific ends #8250 (until 2.6)
         $xmlparser->process();
+// ou-specific begins #8250 (until 2.6)
+
+        // Finish progress.
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**
@@ -827,7 +873,15 @@ abstract class restore_dbops {
      * @param bool $skipparentitemidctxmatch
      * @return array of result object
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function send_files_to_pool($basepath, $restoreid, $component, $filearea, $oldcontextid, $dfltuserid, $itemname = null, $olditemid = null, $forcenewcontextid = null, $skipparentitemidctxmatch = false) {
+*/
+    public static function send_files_to_pool($basepath, $restoreid, $component, $filearea,
+            $oldcontextid, $dfltuserid, $itemname = null, $olditemid = null,
+            $forcenewcontextid = null, $skipparentitemidctxmatch = false,
+            core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $DB, $CFG;
 
         $results = array();
@@ -888,8 +942,21 @@ abstract class restore_dbops {
 
         $fs = get_file_storage();         // Get moodle file storage
         $basepath = $basepath . '/files/';// Get backup file pool base
+// ou-specific begins #8250 (until 2.6)
+        // Report progress before query.
+        if ($progress) {
+            $progress->progress();
+        }
+// ou-specific ends #8250 (until 2.6)
         $rs = $DB->get_recordset_sql($sql, $params);
         foreach ($rs as $rec) {
+// ou-specific begins #8250 (until 2.6)
+            // Report progress each time around loop.
+            if ($progress) {
+                $progress->progress();
+            }
+
+// ou-specific ends #8250 (until 2.6)
             $file = (object)unserialize(base64_decode($rec->info));
 
             // ignore root dirs (they are created automatically)
@@ -991,8 +1058,17 @@ abstract class restore_dbops {
      * ready to be created. Also, annotate their newids
      * once created for later reference
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function create_included_users($basepath, $restoreid, $userid) {
+*/
+    public static function create_included_users($basepath, $restoreid, $userid,
+            core_backup_progress $progress) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG, $DB;
+// ou-specific begins #8250 (until 2.6)
+        $progress->start_progress('Creating included users');
+// ou-specific ends #8250 (until 2.6)
 
         $authcache = array(); // Cache to get some bits from authentication plugins
         $languages = get_string_manager()->get_list_of_translations(); // Get languages for quick search later
@@ -1001,6 +1077,9 @@ abstract class restore_dbops {
         // Iterate over all the included users with newitemid = 0, have to create them
         $rs = $DB->get_recordset('backup_ids_temp', array('backupid' => $restoreid, 'itemname' => 'user', 'newitemid' => 0), '', 'itemid, parentitemid');
         foreach ($rs as $recuser) {
+// ou-specific begins #8250 (until 2.6)
+            $progress->progress();
+// ou-specific ends #8250 (until 2.6)
             $user = (object)self::get_backup_ids_record($restoreid, 'user', $recuser->itemid)->info;
 
             // if user lang doesn't exist here, use site default
@@ -1130,11 +1209,22 @@ abstract class restore_dbops {
                 }
 
                 // Create user files in pool (profile, icon, private) by context
+// ou-specific begins #8250 (until 2.6)
+/*
                 restore_dbops::send_files_to_pool($basepath, $restoreid, 'user', 'icon', $recuser->parentitemid, $userid);
                 restore_dbops::send_files_to_pool($basepath, $restoreid, 'user', 'profile', $recuser->parentitemid, $userid);
+*/
+                restore_dbops::send_files_to_pool($basepath, $restoreid, 'user', 'icon',
+                        $recuser->parentitemid, $userid, null, null, null, false, $progress);
+                restore_dbops::send_files_to_pool($basepath, $restoreid, 'user', 'profile',
+                        $recuser->parentitemid, $userid, null, null, null, false, $progress);
+// ou-specific ends #8250 (until 2.6)
             }
         }
         $rs->close();
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**
@@ -1366,7 +1456,13 @@ abstract class restore_dbops {
      * of problems in case something is wrong (lack of permissions,
      * conficts)
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function precheck_included_users($restoreid, $courseid, $userid, $samesite) {
+*/
+    public static function precheck_included_users($restoreid, $courseid, $userid, $samesite,
+            core_backup_progress $progress) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG, $DB;
 
         // To return any problem found
@@ -1389,8 +1485,21 @@ abstract class restore_dbops {
             $cancreateuser = true;
         }
 
+// ou-specific begins #8250 (until 2.6)
+        // Prepare for reporting progress.
+        $conditions = array('backupid' => $restoreid, 'itemname' => 'user');
+        $max = $DB->count_records('backup_ids_temp', $conditions);
+        $done = 0;
+        $progress->start_progress('Checking users', $max);
+
+// ou-specific ends #8250 (until 2.6)
         // Iterate over all the included users
+// ou-specific begins #8250 (until 2.6)
+/*
         $rs = $DB->get_recordset('backup_ids_temp', array('backupid' => $restoreid, 'itemname' => 'user'), '', 'itemid');
+*/
+        $rs = $DB->get_recordset('backup_ids_temp', $conditions, '', 'itemid');
+// ou-specific ends #8250 (until 2.6)
         foreach ($rs as $recuser) {
             $user = (object)self::get_backup_ids_record($restoreid, 'user', $recuser->itemid)->info;
 
@@ -1427,8 +1536,15 @@ abstract class restore_dbops {
             } else { // Shouldn't arrive here ever, something is for sure wrong. Exception
                 throw new restore_dbops_exception('restore_error_processing_user', $user->username);
             }
+// ou-specific begins #8250 (until 2.6)
+            $done++;
+            $progress->progress($done);
+// ou-specific ends #8250 (until 2.6)
         }
         $rs->close();
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
         return $problems;
     }
 
@@ -1439,11 +1555,22 @@ abstract class restore_dbops {
      * Just wrap over precheck_included_users(), returning
      * exception if any problem is found
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public static function process_included_users($restoreid, $courseid, $userid, $samesite) {
+*/
+    public static function process_included_users($restoreid, $courseid, $userid, $samesite,
+            core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         global $DB;
 
         // Just let precheck_included_users() to do all the hard work
+// ou-specific begins #8250 (until 2.6)
+/*
         $problems = self::precheck_included_users($restoreid, $courseid, $userid, $samesite);
+*/
+        $problems = self::precheck_included_users($restoreid, $courseid, $userid, $samesite, $progress);
+// ou-specific ends #8250 (until 2.6)
 
         // With problems, throw exception, shouldn't happen if prechecks were originally
         // executed, so be radical here.

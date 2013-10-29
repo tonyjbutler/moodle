@@ -25,11 +25,18 @@ require_login($course);
 // Must hold restoretargetimport in the current course
 require_capability('moodle/restore:restoretargetimport', $context);
 
+// ou-specific begins #8250 (until 2.6)
+/*
 $heading = get_string('import');
 
 // Set up the page
 $PAGE->set_title($heading);
 $PAGE->set_heading($heading);
+*/
+// Set up the page
+$PAGE->set_title($course->shortname . ': ' . get_string('import'));
+$PAGE->set_heading($course->fullname);
+// ou-specific ends #8250 (until 2.6)
 $PAGE->set_url(new moodle_url('/backup/import.php', array('id'=>$courseid)));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('incourse');
@@ -90,11 +97,33 @@ if ($backup->get_stage() == backup_ui::STAGE_CONFIRMATION) {
 
 // If it's the final stage process the import
 if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
+// ou-specific begins #8250 (until 2.6)
+    echo $OUTPUT->header();
+
+    // Display an extra progress bar so that we can show the current stage.
+    echo html_writer::start_div('', array('id' => 'executionprogress'));
+    echo $renderer->progress_bar($backup->get_progress_bar());
+
+    // Start the progress display - we split into 2 chunks for backup and restore.
+    $progress = new core_backup_display_progress();
+    $progress->start_progress('', 2);
+    $backup->get_controller()->set_progress($progress);
+
+    // Prepare logger for backup.
+    $logger = new core_backup_html_logger(debugging('', DEBUG_DEVELOPER) ? backup::LOG_DEBUG : backup::LOG_INFO);
+    $backup->get_controller()->add_logger($logger);
+
+// ou-specific ends #8250 (until 2.6)
     // First execute the backup
     $backup->execute();
     $backup->destroy();
     unset($backup);
 
+// ou-specific begins #8250 (until 2.6)
+    // Note that we've done that progress.
+    $progress->progress(1);
+
+// ou-specific ends #8250 (until 2.6)
     // Check whether the backup directory still exists. If missing, something
     // went really wrong in backup, throw error. Note that backup::MODE_IMPORT
     // backups don't store resulting files ever
@@ -106,6 +135,17 @@ if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
     // Prepare the restore controller. We don't need a UI here as we will just use what
     // ever the restore has (the user has just chosen).
     $rc = new restore_controller($backupid, $course->id, backup::INTERACTIVE_YES, backup::MODE_IMPORT, $USER->id, $restoretarget);
+// ou-specific begins #8250 (until 2.6)
+
+    // Start a progress section for the restore, which will consist of 2 steps
+    // (the precheck and then the actual restore).
+    $progress->start_progress('Restore process', 2);
+    $rc->set_progress($progress);
+
+    // Set logger for restore.
+    $rc->add_logger($logger);
+
+// ou-specific ends #8250 (until 2.6)
     // Convert the backup if required.... it should NEVER happed
     if ($rc->get_status() == backup::STATUS_REQUIRE_CONV) {
         $rc->convert();
@@ -140,6 +180,16 @@ if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
     // Delete the temp directory now
     fulldelete($tempdestination);
 
+// ou-specific begins #8250 (until 2.6)
+    // End restore section of progress tracking (restore/precheck).
+    $progress->end_progress();
+
+    // All progress complete. Hide progress area.
+    $progress->end_progress();
+    echo html_writer::end_div();
+    echo html_writer::script('document.getElementById("executionprogress").style.display = "none";');
+
+// ou-specific ends #8250 (until 2.6)
     // Display a notification and a continue button
     echo $OUTPUT->header();
     if ($warnings) {
@@ -154,6 +204,15 @@ if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
     }
     echo $OUTPUT->notification(get_string('importsuccess', 'backup'), 'notifysuccess');
     echo $OUTPUT->continue_button(new moodle_url('/course/view.php', array('id'=>$course->id)));
+// ou-specific begins #8250 (until 2.6)
+
+    // Get and display log data if there was any.
+    $loghtml = $logger->get_html();
+    if ($loghtml != '') {
+        echo $renderer->log_display($loghtml);
+    }
+
+// ou-specific ends #8250 (until 2.6)
     echo $OUTPUT->footer();
 
     die();
@@ -163,11 +222,15 @@ if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
     $backup->save_controller();
 }
 
+// ou-specific begins #8250 (until 2.6)
+/*
 // Adjust the page for the stage
 $PAGE->set_title($heading.': '.$backup->get_stage_name());
 $PAGE->set_heading($heading.': '.$backup->get_stage_name());
 $PAGE->navbar->add($backup->get_stage_name());
 
+*/
+// ou-specific ends #8250 (until 2.6)
 // Display the current stage
 echo $OUTPUT->header();
 if ($backup->enforce_changed_dependencies()) {

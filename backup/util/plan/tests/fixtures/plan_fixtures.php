@@ -34,6 +34,12 @@ require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 class mock_base_plan extends base_plan {
     public function build() {
     }
+// ou-specific begins #8250 (until 2.6)
+
+    public function get_progress() {
+        return null;
+    }
+// ou-specific ends #8250 (until 2.6)
 }
 
 /**

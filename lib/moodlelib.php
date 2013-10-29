@@ -6211,13 +6211,30 @@ function get_file_packer($mimetype='application/zip') {
 
     switch ($mimetype) {
         case 'application/zip':
+// ou-specific begins #8250 (until 2.6)
+/*
         case 'application/vnd.moodle.backup':
+*/
+// ou-specific ends #8250 (until 2.6)
         case 'application/vnd.moodle.profiling':
             $classname = 'zip_packer';
             break;
+// ou-specific begins #8250 (until 2.6)
+/*
         case 'application/x-tar':
 //            $classname = 'tar_packer';
 //            break;
+*/
+
+        case 'application/x-gzip' :
+            $classname = 'tgz_packer';
+            break;
+
+        case 'application/vnd.moodle.backup':
+            $classname = 'mbz_packer';
+            break;
+
+// ou-specific ends #8250 (until 2.6)
         default:
             return false;
     }

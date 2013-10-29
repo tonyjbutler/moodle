@@ -30,7 +30,12 @@
  *
  * TODO: Finish phpdocs
  */
+// ou-specific begins #8250 (until 2.6)
+/*
 class restore_controller extends backup implements loggable {
+*/
+class restore_controller extends base_controller {
+// ou-specific ends #8250 (until 2.6)
 
     protected $tempdir;   // Directory under tempdir/backup awaiting restore
     protected $restoreid; // Unique identificator for this restore
@@ -55,8 +60,12 @@ class restore_controller extends backup implements loggable {
     protected $execution;     // inmediate/delayed
     protected $executiontime; // epoch time when we want the restore to be executed (requires cron to run)
 
+// ou-specific begins #8250 (until 2.6)
+/*
     protected $logger;      // Logging chain object (moodle, inline, fs, db, syslog)
 
+*/
+// ou-specific ends #8250 (until 2.6)
     protected $checksum; // Cache @checksumable results for lighter @is_checksum_correct() uses
 
     /**
@@ -68,7 +77,13 @@ class restore_controller extends backup implements loggable {
      * @param int $userid
      * @param int $target backup::TARGET_[ NEW_COURSE | CURRENT_ADDING | CURRENT_DELETING | EXISTING_ADDING | EXISTING_DELETING ]
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public function __construct($tempdir, $courseid, $interactive, $mode, $userid, $target){
+*/
+    public function __construct($tempdir, $courseid, $interactive, $mode, $userid, $target,
+            core_backup_progress $progress = null) {
+// ou-specific ends #8250 (until 2.6)
         $this->tempdir = $tempdir;
         $this->courseid = $courseid;
         $this->interactive = $interactive;
@@ -101,6 +116,17 @@ class restore_controller extends backup implements loggable {
         // Default logger chain (based on interactive/execution)
         $this->logger = backup_factory::get_logger_chain($this->interactive, $this->execution, $this->restoreid);
 
+// ou-specific begins #8250 (until 2.6)
+        // By default there is no progress reporter unless you specify one so it
+        // can be used during loading of the plan.
+        if ($progress) {
+            $this->progress = $progress;
+        } else {
+            $this->progress = new core_backup_null_progress();
+        }
+        $this->progress->start_progress('Constructing restore_controller');
+
+// ou-specific ends #8250 (until 2.6)
         // Instantiate the output_controller singleton and active it if interactive and inmediate
         $oc = output_controller::get_instance();
         if ($this->interactive == backup::INTERACTIVE_YES && $this->execution == backup::EXECUTION_INMEDIATE) {
@@ -133,6 +159,11 @@ class restore_controller extends backup implements loggable {
                 $this->set_status(backup::STATUS_NEED_PRECHECK);
             }
         }
+// ou-specific begins #8250 (until 2.6)
+
+        // Tell progress monitor that we finished loading.
+        $this->progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**
@@ -296,10 +327,14 @@ class restore_controller extends backup implements loggable {
         return $this->info;
     }
 
+// ou-specific begins #8250 (until 2.6)
+/*
     public function get_logger() {
         return $this->logger;
     }
 
+*/
+// ou-specific ends #8250 (until 2.6)
     public function execute_plan() {
         // Basic/initial prevention against time/memory limits
         set_time_limit(1 * 60 * 60); // 1 hour for 1 course initially granted
@@ -367,10 +402,14 @@ class restore_controller extends backup implements loggable {
         return $this->precheck;
     }
 
+// ou-specific begins #8250 (until 2.6)
+/*
     public function log($message, $level, $a = null, $depth = null, $display = false) {
         backup_helper::log($message, $level, $a, $depth, $display, $this->logger);
     }
 
+*/
+// ou-specific ends #8250 (until 2.6)
     /**
      * Save controller information
      *

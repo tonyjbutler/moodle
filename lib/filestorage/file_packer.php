@@ -47,7 +47,14 @@ abstract class file_packer {
      * @param bool $ignoreinvalidfiles true means ignore missing or invalid files, false means abort on any error
      * @return stored_file|bool false if error stored_file instance if ok
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public abstract function archive_to_storage(array $files, $contextid, $component, $filearea, $itemid, $filepath, $filename, $userid = NULL, $ignoreinvalidfiles=true);
+*/
+    public abstract function archive_to_storage(array $files, $contextid,
+            $component, $filearea, $itemid, $filepath, $filename,
+            $userid = NULL, $ignoreinvalidfiles=true, file_progress $progress = null);
+// ou-specific ends #8250 (until 2.6)
 
     /**
      * Archive files and store the result in os file.
@@ -57,7 +64,13 @@ abstract class file_packer {
      * @param bool $ignoreinvalidfiles true means ignore missing or invalid files, false means abort on any error
      * @return bool true if file created, false if not
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public abstract function archive_to_pathname(array $files, $archivefile, $ignoreinvalidfiles=true);
+*/
+    public abstract function archive_to_pathname(array $files, $archivefile,
+            $ignoreinvalidfiles=true, file_progress $progress = null);
+// ou-specific ends #8250 (until 2.6)
 
     /**
      * Extract file to given file path (real OS filesystem), existing files are overwritten.
@@ -67,7 +80,13 @@ abstract class file_packer {
      * @param array $onlyfiles only extract files present in the array
      * @return array|bool list of processed files; false if error
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public abstract function extract_to_pathname($archivefile, $pathname, array $onlyfiles = NULL);
+*/
+    public abstract function extract_to_pathname($archivefile, $pathname,
+            array $onlyfiles = NULL, file_progress $progress = null);
+// ou-specific ends #8250 (until 2.6)
 
     /**
      * Extract file to given file path (real OS filesystem), existing files are overwritten.
@@ -81,7 +100,14 @@ abstract class file_packer {
      * @param int $userid user ID
      * @return array|bool list of processed files; false if error
      */
+// ou-specific begins #8250 (until 2.6)
+/*
     public abstract function extract_to_storage($archivefile, $contextid, $component, $filearea, $itemid, $pathbase, $userid = NULL);
+*/
+    public abstract function extract_to_storage($archivefile, $contextid,
+            $component, $filearea, $itemid, $pathbase, $userid = NULL,
+            file_progress $progress = null);
+// ou-specific ends #8250 (until 2.6)
 
     /**
      * Returns array of info about all files in archive.

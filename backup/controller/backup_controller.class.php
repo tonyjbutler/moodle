@@ -40,7 +40,12 @@
  *
  * TODO: Finish phpdocs
  */
+// ou-specific begins #8250 (until 2.6)
+/*
 class backup_controller extends backup implements loggable {
+*/
+class backup_controller extends base_controller {
+// ou-specific ends #8250 (until 2.6)
 
     protected $backupid; // Unique identificator for this backup
 
@@ -61,7 +66,11 @@ class backup_controller extends backup implements loggable {
     protected $executiontime; // epoch time when we want the backup to be executed (requires cron to run)
 
     protected $destination; // Destination chain object (fs_moodle, fs_os, db, email...)
+// ou-specific begins #8250 (until 2.6)
+/*
     protected $logger;      // Logging chain object (moodle, inline, fs, db, syslog)
+*/
+// ou-specific ends #8250 (until 2.6)
 
     protected $checksum; // Cache @checksumable results for lighter @is_checksum_correct() uses
 
@@ -108,6 +117,12 @@ class backup_controller extends backup implements loggable {
         // Default logger chain (based on interactive/execution)
         $this->logger = backup_factory::get_logger_chain($this->interactive, $this->execution, $this->backupid);
 
+// ou-specific begins #8250 (until 2.6)
+        // By default there is no progress reporter. Interfaces that wish to
+        // display progress must set it.
+        $this->progress = new core_backup_null_progress();
+
+// ou-specific ends #8250 (until 2.6)
         // Instantiate the output_controller singleton and active it if interactive and inmediate
         $oc = output_controller::get_instance();
         if ($this->interactive == backup::INTERACTIVE_YES && $this->execution == backup::EXECUTION_INMEDIATE) {
@@ -286,9 +301,13 @@ class backup_controller extends backup implements loggable {
         return $this->plan;
     }
 
+// ou-specific begins #8250 (until 2.6)
+/*
     public function get_logger() {
         return $this->logger;
     }
+*/
+// ou-specific ends #8250 (until 2.6)
 
     /**
      * Executes the backup
@@ -313,10 +332,14 @@ class backup_controller extends backup implements loggable {
         return $this->plan->get_results();
     }
 
+// ou-specific begins #8250 (until 2.6)
+/*
     public function log($message, $level, $a = null, $depth = null, $display = false) {
         backup_helper::log($message, $level, $a, $depth, $display, $this->logger);
     }
 
+*/
+// ou-specific ends #8250 (until 2.6)
     /**
      * Save controller information
      *

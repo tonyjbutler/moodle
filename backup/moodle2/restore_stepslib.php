@@ -65,10 +65,25 @@ class restore_drop_and_clean_temp_stuff extends restore_execution_step {
     protected function define_execution() {
         global $CFG;
         restore_controller_dbops::drop_restore_temp_tables($this->get_restoreid()); // Drop ids temp table
+// ou-specific begins #8250 (until 2.6)
+/*
         backup_helper::delete_old_backup_dirs(time() - (4 * 60 * 60));              // Delete > 4 hours temp dirs
+*/
+        $progress = $this->task->get_progress();
+        $progress->start_progress('Deleting backup dir');
+        backup_helper::delete_old_backup_dirs(time() - (4 * 60 * 60), $progress);              // Delete > 4 hours temp dirs
+// ou-specific ends #8250 (until 2.6)
         if (empty($CFG->keeptempdirectoriesonbackup)) { // Conditionally
+// ou-specific begins #8250 (until 2.6)
+/*
             backup_helper::delete_backup_dir($this->task->get_tempdir()); // Empty restore dir
+*/
+            backup_helper::delete_backup_dir($this->task->get_tempdir(), $progress); // Empty restore dir
+// ou-specific ends #8250 (until 2.6)
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -594,13 +609,26 @@ class restore_load_included_inforef_records extends restore_execution_step {
 
         // Get all the included tasks
         $tasks = restore_dbops::get_included_tasks($this->get_restoreid());
+// ou-specific begins #8250 (until 2.6)
+        $progress = $this->task->get_progress();
+        $progress->start_progress($this->get_name(), count($tasks));
+// ou-specific ends #8250 (until 2.6)
         foreach ($tasks as $task) {
             // Load the inforef.xml file if exists
             $inforefpath = $task->get_taskbasepath() . '/inforef.xml';
             if (file_exists($inforefpath)) {
+// ou-specific begins #8250 (until 2.6)
+/*
                 restore_dbops::load_inforef_to_tempids($this->get_restoreid(), $inforefpath); // Load each inforef file to temp_ids
+*/
+                // Load each inforef file to temp_ids.
+                restore_dbops::load_inforef_to_tempids($this->get_restoreid(), $inforefpath, $progress);
+// ou-specific ends #8250 (until 2.6)
             }
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -687,7 +715,13 @@ class restore_load_included_users extends restore_execution_step {
             return;
         }
         $file = $this->get_basepath() . '/users.xml';
+// ou-specific begins #8250 (until 2.6)
+/*
         restore_dbops::load_users_to_tempids($this->get_restoreid(), $file); // Load needed users to temp_ids
+*/
+        // Load needed users to temp_ids.
+        restore_dbops::load_users_to_tempids($this->get_restoreid(), $file, $this->task->get_progress());
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -708,7 +742,13 @@ class restore_process_included_users extends restore_execution_step {
         if (!$this->task->get_setting_value('users')) { // No userinfo being restored, nothing to do
             return;
         }
+// ou-specific begins #8250 (until 2.6)
+/*
         restore_dbops::process_included_users($this->get_restoreid(), $this->task->get_courseid(), $this->task->get_userid(), $this->task->is_samesite());
+*/
+        restore_dbops::process_included_users($this->get_restoreid(), $this->task->get_courseid(),
+                $this->task->get_userid(), $this->task->is_samesite(), $this->task->get_progress());
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -720,7 +760,13 @@ class restore_create_included_users extends restore_execution_step {
 
     protected function define_execution() {
 
+// ou-specific begins #8250 (until 2.6)
+/*
         restore_dbops::create_included_users($this->get_basepath(), $this->get_restoreid(), $this->task->get_userid());
+*/
+        restore_dbops::create_included_users($this->get_basepath(), $this->get_restoreid(),
+                $this->task->get_userid(), $this->task->get_progress());
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -3536,6 +3582,12 @@ class restore_create_question_files extends restore_execution_step {
     protected function define_execution() {
         global $DB;
 
+// ou-specific begins #8250 (until 2.6)
+        // Track progress, as this task can take a long time.
+        $progress = $this->task->get_progress();
+        $progress->start_progress($this->get_name(), core_backup_progress::INDETERMINATE);
+
+// ou-specific ends #8250 (until 2.6)
         // Let's process only created questions
         $questionsrs = $DB->get_recordset_sql("SELECT bi.itemid, bi.newitemid, bi.parentitemid, q.qtype
                                                FROM {backup_ids_temp} bi
@@ -3543,6 +3595,11 @@ class restore_create_question_files extends restore_execution_step {
                                               WHERE bi.backupid = ?
                                                 AND bi.itemname = 'question_created'", array($this->get_restoreid()));
         foreach ($questionsrs as $question) {
+// ou-specific begins #8250 (until 2.6)
+            // Report progress for each question.
+            $progress->progress();
+
+// ou-specific ends #8250 (until 2.6)
             // Get question_category mapping, it contains the target context for the question
             if (!$qcatmapping = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'question_category', $question->parentitemid)) {
                 // Something went really wrong, cannot find the question_category for the question
@@ -3554,6 +3611,8 @@ class restore_create_question_files extends restore_execution_step {
             $newctxid = $qcatmapping->parentitemid;
 
             // Add common question files (question and question_answer ones)
+// ou-specific begins #8250 (until 2.6)
+/*
             restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'questiontext',
                                               $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true);
             restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'generalfeedback',
@@ -3570,6 +3629,25 @@ class restore_create_question_files extends restore_execution_step {
                                               $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true);
             restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'incorrectfeedback',
                                               $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true);
+*/
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'questiontext',
+                    $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true, $progress);
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'generalfeedback',
+                    $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true, $progress);
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'answer',
+                    $oldctxid, $this->task->get_userid(), 'question_answer', null, $newctxid, true, $progress);
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'answerfeedback',
+                    $oldctxid, $this->task->get_userid(), 'question_answer', null, $newctxid, true, $progress);
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'hint',
+                    $oldctxid, $this->task->get_userid(), 'question_hint', null, $newctxid, true, $progress);
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'correctfeedback',
+                    $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true, $progress);
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'partiallycorrectfeedback',
+                    $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true, $progress);
+            restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), 'question', 'incorrectfeedback',
+                    $oldctxid, $this->task->get_userid(), 'question_created', $question->itemid, $newctxid, true, $progress);
+
+// ou-specific ends #8250 (until 2.6)
             // Add qtype dependent files
             $components = backup_qtype_plugin::get_components_and_fileareas($question->qtype);
             foreach ($components as $component => $fileareas) {
@@ -3577,11 +3655,19 @@ class restore_create_question_files extends restore_execution_step {
                     // Use itemid only if mapping is question_created
                     $itemid = ($mapping == 'question_created') ? $question->itemid : null;
                     restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), $component, $filearea,
+// ou-specific begins #8250 (until 2.6)
+/*
                                                       $oldctxid, $this->task->get_userid(), $mapping, $itemid, $newctxid, true);
+*/
+                            $oldctxid, $this->task->get_userid(), $mapping, $itemid, $newctxid, true, $progress);
+// ou-specific ends #8250 (until 2.6)
                 }
             }
         }
         $questionsrs->close();
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -3614,7 +3700,12 @@ class restore_process_file_aliases_queue extends restore_execution_step {
     protected function define_execution() {
         global $DB;
 
+// ou-specific begins #8250 (until 2.6)
+/*
         $this->log('processing file aliases queue', backup::LOG_INFO);
+*/
+        $this->log('processing file aliases queue', backup::LOG_DEBUG);
+// ou-specific ends #8250 (until 2.6)
 
         $fs = get_file_storage();
 

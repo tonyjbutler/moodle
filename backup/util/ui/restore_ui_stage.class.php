@@ -93,10 +93,52 @@ abstract class restore_ui_stage extends base_ui_stage {
  * no use for the restore controller.
  */
 abstract class restore_ui_independent_stage {
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * @var core_backup_progress Optional progress reporter
+     */
+    private $progressreporter;
+
+// ou-specific ends #8250 (until 2.6)
     abstract public function __construct($contextid);
     abstract public function process();
     abstract public function display(core_backup_renderer $renderer);
     abstract public function get_stage();
+// ou-specific begins #8250 (until 2.6)
+
+    /**
+     * Gets the progress reporter object in use for this restore UI stage.
+     *
+     * IMPORTANT: This progress reporter is used only for UI progress that is
+     * outside the restore controller. The restore controller has its own
+     * progress reporter which is used for progress during the main restore.
+     * Use the restore controller's progress reporter to report progress during
+     * a restore operation, not this one.
+     *
+     * This extra reporter is necessary because on some restore UI screens,
+     * there are long-running tasks even though there is no restore controller
+     * in use. There is a similar function in restore_ui. but that class is not
+     * used on some stages.
+     *
+     * @return core_backup_null_progress
+     */
+    public function get_progress_reporter() {
+        if (!$this->progressreporter) {
+            $this->progressreporter = new core_backup_null_progress();
+        }
+        return $this->progressreporter;
+    }
+
+    /**
+     * Sets the progress reporter that will be returned by get_progress_reporter.
+     *
+     * @param core_backup_progress $progressreporter Progress reporter
+     */
+    public function set_progress_reporter(core_backup_progress $progressreporter) {
+        $this->progressreporter = $progressreporter;
+    }
+
+// ou-specific ends #8250 (until 2.6)
     /**
      * Gets an array of progress bar items that can be displayed through the restore renderer.
      * @return array Array of items for the progress bar
@@ -142,33 +184,139 @@ abstract class restore_ui_independent_stage {
  *
  * This is the first stage, it is independent.
  */
+// ou-specific begins #8250 (until 2.6)
+/*
 class restore_ui_stage_confirm extends restore_ui_independent_stage {
+*/
+class restore_ui_stage_confirm extends restore_ui_independent_stage implements file_progress {
+
+// ou-specific ends #8250 (until 2.6)
     protected $contextid;
     protected $filename = null;
     protected $filepath = null;
+// ou-specific begins #8250 (until 2.6)
+
+    /**
+     * @var string Content hash of archive file to restore (if specified by hash)
+     */
+    protected $contenthash = null;
+    /**
+     * @var string Pathname hash of stored_file object to restore
+     */
+    protected $pathnamehash = null;
+
+// ou-specific ends #8250 (until 2.6)
     protected $details;
+// ou-specific begins #8250 (until 2.6)
+
+    /**
+     * @var bool True if we have started reporting progress
+     */
+    protected $startedprogress = false;
+
+// ou-specific ends #8250 (until 2.6)
     public function __construct($contextid) {
         $this->contextid = $contextid;
+// ou-specific begins #8250 (until 2.6)
+/*
         $this->filename = required_param('filename', PARAM_FILE);
+*/
+        $this->filename = optional_param('filename', null, PARAM_FILE);
+        if ($this->filename === null) {
+            // Identify file object by its pathname hash.
+            $this->pathnamehash = required_param('pathnamehash', PARAM_ALPHANUM);
+
+            // The file content hash is also passed for security; users
+            // cannot guess the content hash (unless they know the file contents),
+            // so this guarantees that either the system generated this link or
+            // else the user has access to the restore archive anyhow.
+            $this->contenthash = required_param('contenthash', PARAM_ALPHANUM);
+        }
+// ou-specific ends #8250 (until 2.6)
     }
     public function process() {
         global $CFG;
+// ou-specific begins #8250 (until 2.6)
+/*
         if (!file_exists("$CFG->tempdir/backup/".$this->filename)) {
             throw new restore_ui_exception('invalidrestorefile');
         }
         $outcome = $this->extract_file_to_dir();
         if ($outcome) {
             fulldelete($this->filename);
+*/
+        if ($this->filename) {
+            $archivepath = $CFG->tempdir . '/backup/' . $this->filename;
+            if (!file_exists($archivepath)) {
+                throw new restore_ui_exception('invalidrestorefile');
+            }
+            $outcome = $this->extract_file_to_dir($archivepath);
+            if ($outcome) {
+                fulldelete($archivepath);
+            }
+        } else {
+            $fs = get_file_storage();
+            $storedfile = $fs->get_file_by_hash($this->pathnamehash);
+            if (!$storedfile || $storedfile->get_contenthash() !== $this->contenthash) {
+                throw new restore_ui_exception('invalidrestorefile');
+            }
+            $outcome = $this->extract_file_to_dir($storedfile);
+// ou-specific ends #8250 (until 2.6)
         }
         return $outcome;
     }
+// ou-specific begins #8250 (until 2.6)
+/*
     protected function extract_file_to_dir() {
+ */
+
+    /**
+     * Extracts the file.
+     *
+     * @param string|stored_file $source Archive file to extract
+     */
+    protected function extract_file_to_dir($source) {
+// ou-specific ends #8250 (until 2.6)
         global $CFG, $USER;
 
         $this->filepath = restore_controller::get_tempdir_name($this->contextid, $USER->id);
 
+// ou-specific begins #8250 (until 2.6)
+/*
         $fb = get_file_packer();
         return ($fb->extract_to_pathname("$CFG->tempdir/backup/".$this->filename, "$CFG->tempdir/backup/$this->filepath/"));
+*/
+        $fb = get_file_packer('application/vnd.moodle.backup');
+        $result = $fb->extract_to_pathname($source,
+                $CFG->tempdir . '/backup/' . $this->filepath . '/', null, $this);
+
+        // If any progress happened, end it.
+        if ($this->startedprogress) {
+            $this->get_progress_reporter()->end_progress();
+        }
+        return $result;
+    }
+
+    /**
+     * Implementation for file_progress interface to display unzip progress.
+     *
+     * @param int $progress Current progress
+     * @param int $max Max value
+     */
+    public function progress($progress = file_progress::INDETERMINATE, $max = file_progress::INDETERMINATE) {
+        $reporter = $this->get_progress_reporter();
+
+        // Start tracking progress if necessary.
+        if (!$this->startedprogress) {
+            $reporter->start_progress('extract_file_to_dir',
+                    ($max == file_progress::INDETERMINATE) ? core_backup_progress::INDETERMINATE : $max);
+            $this->startedprogress = true;
+        }
+
+        // Pass progress through to whatever handles it.
+        $reporter->progress(
+                ($progress == file_progress::INDETERMINATE) ? core_backup_progress::INDETERMINATE : $progress);
+// ou-specific ends #8250 (until 2.6)
     }
 
     /**
@@ -413,6 +561,13 @@ class restore_ui_stage_settings extends restore_ui_stage {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_ui_stage_schema extends restore_ui_stage {
+// ou-specific begins #8250 (until 2.6)
+    /**
+     * @var int Maximum number of settings to add to form at once
+     */
+    const MAX_SETTINGS_BATCH = 1000;
+
+// ou-specific ends #8250 (until 2.6)
     /**
      * Schema stage constructor
      * @param backup_moodleform $ui
@@ -477,6 +632,14 @@ class restore_ui_stage_schema extends restore_ui_stage {
             $tasks = $this->ui->get_tasks();
             $courseheading = false;
 
+// ou-specific begins #8250 (until 2.6)
+            // Track progress through each stage.
+            $progress = $this->ui->get_progress_reporter();
+            $progress->start_progress('Initialise schema stage form', 3);
+
+            $progress->start_progress('', count($tasks));
+            $done = 1;
+// ou-specific ends #8250 (until 2.6)
             $allsettings = array();
             foreach ($tasks as $task) {
                 if (!($task instanceof restore_root_task)) {
@@ -503,16 +666,54 @@ class restore_ui_stage_schema extends restore_ui_stage {
                         }
                     }
                 }
+// ou-specific begins #8250 (until 2.6)
+                // Update progress.
+                $progress->progress($done++);
+// ou-specific ends #8250 (until 2.6)
             }
+// ou-specific begins #8250 (until 2.6)
+/*
 
             // Actually add all the settings that we put in the array.
             $form->add_settings($allsettings);
+*/
+            $progress->end_progress();
+
+            // Add settings for tasks in batches of up to 1000. Adding settings
+            // in larger batches improves performance, but if it takes too long,
+            // we won't be able to update the progress bar so the backup might
+            // time out. 1000 is chosen to balance this.
+            $numsettings = count($allsettings);
+            $progress->start_progress('', ceil($numsettings / self::MAX_SETTINGS_BATCH));
+            $start = 0;
+            $done = 1;
+            while($start < $numsettings) {
+                $length = min(self::MAX_SETTINGS_BATCH, $numsettings - $start);
+                $form->add_settings(array_slice($allsettings, $start, $length));
+                $start += $length;
+                $progress->progress($done++);
+            }
+            $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
 
             // Add the dependencies for all the settings.
+// ou-specific begins #8250 (until 2.6)
+            $progress->start_progress('', count($allsettings));
+            $done = 1;
+// ou-specific ends #8250 (until 2.6)
             foreach ($allsettings as $settingtask) {
                 $form->add_dependencies($settingtask[0]);
+// ou-specific begins #8250 (until 2.6)
+                $progress->progress($done++);
+// ou-specific ends #8250 (until 2.6)
             }
+// ou-specific begins #8250 (until 2.6)
+            $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
 
+// ou-specific begins #8250 (until 2.6)
+            $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
             $this->stageform = $form;
         }
         return $this->stageform;
@@ -570,7 +771,16 @@ class restore_ui_stage_review extends restore_ui_stage {
             $content = '';
             $courseheading = false;
 
+// ou-specific begins #8250 (until 2.6)
+/*
             foreach ($this->ui->get_tasks() as $task) {
+*/
+            $progress = $this->ui->get_progress_reporter();
+            $tasks = $this->ui->get_tasks();
+            $progress->start_progress('initialise_stage_form', count($tasks));
+            $done = 1;
+            foreach ($tasks as $task) {
+// ou-specific ends #8250 (until 2.6)
                 if ($task instanceof restore_root_task) {
                     // If its a backup root add a root settings heading to group nicely
                     $form->add_heading('rootsettings', get_string('rootsettings', 'backup'));
@@ -583,7 +793,14 @@ class restore_ui_stage_review extends restore_ui_stage {
                 foreach ($task->get_settings() as $setting) {
                     $form->add_fixed_setting($setting, $task);
                 }
+// ou-specific begins #8250 (until 2.6)
+                // Update progress.
+                $progress->progress($done++);
+// ou-specific ends #8250 (until 2.6)
             }
+// ou-specific begins #8250 (until 2.6)
+            $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
             $this->stageform = $form;
         }
         return $this->stageform;

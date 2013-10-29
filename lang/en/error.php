@@ -220,6 +220,9 @@ $string['duplicateroleshortname'] = 'There is already a role with this short nam
 $string['duplicateusername'] = 'Duplicate username - skipping record';
 $string['emailfail'] = 'Emailing failed';
 $string['error'] = 'Error occurred';
+// ou-specific begins #8250 (until 2.6)
+$string['errorprocessingarchive'] = 'Error processing archive file';
+// ou-specific ends #8250 (until 2.6)
 $string['errorcleaningdirectory'] = 'Error cleaning directory "{$a}"';
 $string['errorcopyingfiles'] = 'Error copying files';
 $string['errorcreatingdirectory'] = 'Error creating directory "{$a}"';

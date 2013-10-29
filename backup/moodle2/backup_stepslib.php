@@ -34,10 +34,23 @@ defined('MOODLE_INTERNAL') || die();
 class create_and_clean_temp_stuff extends backup_execution_step {
 
     protected function define_execution() {
+// ou-specific begins #8250 (until 2.6)
+        $progress = $this->task->get_progress();
+        $progress->start_progress('Deleting backup directories');
+// ou-specific ends #8250 (until 2.6)
         backup_helper::check_and_create_backup_dir($this->get_backupid());// Create backup temp dir
+// ou-specific begins #8250 (until 2.6)
+/*
         backup_helper::clear_backup_dir($this->get_backupid());           // Empty temp dir, just in case
         backup_helper::delete_old_backup_dirs(time() - (4 * 60 * 60));    // Delete > 4 hours temp dirs
+*/
+        backup_helper::clear_backup_dir($this->get_backupid(), $progress);           // Empty temp dir, just in case
+        backup_helper::delete_old_backup_dirs(time() - (4 * 60 * 60), $progress);    // Delete > 4 hours temp dirs
+// ou-specific ends #8250 (until 2.6)
         backup_controller_dbops::create_backup_ids_temp_table($this->get_backupid()); // Create ids temp table
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -61,7 +74,15 @@ class drop_and_clean_temp_stuff extends backup_execution_step {
         // 1) If $CFG->keeptempdirectoriesonbackup is not enabled
         // 2) If backup temp dir deletion has been marked to be avoided
         if (empty($CFG->keeptempdirectoriesonbackup) && !$this->skipcleaningtempdir) {
+// ou-specific begins #8250 (until 2.6)
+/*
             backup_helper::delete_backup_dir($this->get_backupid()); // Empty backup dir
+*/
+            $progress = $this->task->get_progress();
+            $progress->start_progress('Deleting backup dir');
+            backup_helper::delete_backup_dir($this->get_backupid(), $progress); // Empty backup dir
+            $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
         }
     }
 
@@ -1499,10 +1520,25 @@ class move_inforef_annotations_to_final extends backup_execution_step {
 
         // Items we want to include in the inforef file
         $items = backup_helper::get_inforef_itemnames();
+// ou-specific begins #8250 (until 2.6)
+        $progress = $this->task->get_progress();
+        $progress->start_progress($this->get_name(), count($items));
+        $done = 1;
+// ou-specific ends #8250 (until 2.6)
         foreach ($items as $itemname) {
             // Delegate to dbops
+// ou-specific begins #8250 (until 2.6)
+/*
             backup_structure_dbops::move_annotations_to_final($this->get_backupid(), $itemname);
+*/
+            backup_structure_dbops::move_annotations_to_final($this->get_backupid(),
+                    $itemname, $progress);
+            $progress->progress($done++);
+// ou-specific ends #8250 (until 2.6)
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
     }
 }
 
@@ -1579,7 +1615,13 @@ class backup_main_structure_step extends backup_structure_step {
         $info['original_system_contextid'] = context_system::instance()->id;
 
         // Get more information from controller
+// ou-specific begins #8250 (until 2.6)
+/*
         list($dinfo, $cinfo, $sinfo) = backup_controller_dbops::get_moodle_backup_information($this->get_backupid());
+*/
+        list($dinfo, $cinfo, $sinfo) = backup_controller_dbops::get_moodle_backup_information(
+                $this->get_backupid(), $this->get_task()->get_progress());
+// ou-specific ends #8250 (until 2.6)
 
         // Define elements
 
@@ -1666,7 +1708,16 @@ class backup_main_structure_step extends backup_structure_step {
 /**
  * Execution step that will generate the final zip (.mbz) file with all the contents
  */
+// ou-specific begins #8250 (until 2.6)
+/*
 class backup_zip_contents extends backup_execution_step {
+*/
+class backup_zip_contents extends backup_execution_step implements file_progress {
+    /**
+     * @var bool True if we have started tracking progress
+     */
+    protected $startedprogress;
+// ou-specific ends #8250 (until 2.6)
 
     protected function define_execution() {
 
@@ -1690,10 +1741,25 @@ class backup_zip_contents extends backup_execution_step {
         $zipfile = $basepath . '/backup.mbz';
 
         // Get the zip packer
+// ou-specific begins #8250 (until 2.6)
+/*
         $zippacker = get_file_packer('application/zip');
+*/
+        $zippacker = get_file_packer('application/vnd.moodle.backup');
+// ou-specific ends #8250 (until 2.6)
 
         // Zip files
+// ou-specific begins #8250 (until 2.6)
+/*
         $result = $zippacker->archive_to_pathname($files, $zipfile, true, $this);
+*/
+        $zippacker->archive_to_pathname($files, $zipfile, true, $this);
+
+        // If any progress happened, end it.
+        if ($this->startedprogress) {
+            $this->task->get_progress()->end_progress();
+        }
+// ou-specific ends #8250 (until 2.6)
 
         // Something went wrong.
         if ($result === false) {
@@ -1708,6 +1774,29 @@ class backup_zip_contents extends backup_execution_step {
             throw new backup_step_exception('error_zip_packing', '', $e->debuginfo);
         }
     }
+// ou-specific begins #8250 (until 2.6)
+
+    /**
+     * Implementation for file_progress interface to display unzip progress.
+     *
+     * @param int $progress Current progress
+     * @param int $max Max value
+     */
+    public function progress($progress = file_progress::INDETERMINATE, $max = file_progress::INDETERMINATE) {
+        $reporter = $this->task->get_progress();
+
+        // Start tracking progress if necessary.
+        if (!$this->startedprogress) {
+            $reporter->start_progress('extract_file_to_dir', ($max == file_progress::INDETERMINATE)
+                    ? core_backup_progress::INDETERMINATE : $max);
+            $this->startedprogress = true;
+        }
+
+        // Pass progress through to whatever handles it.
+        $reporter->progress(($progress == file_progress::INDETERMINATE)
+                ? core_backup_progress::INDETERMINATE : $progress);
+     }
+// ou-specific ends #8250 (until 2.6)
 }
 
 /**
@@ -1726,7 +1815,13 @@ class backup_store_backup_file extends backup_execution_step {
         $has_file_references = backup_controller_dbops::backup_includes_file_references($this->get_backupid());
         // Perform storage and return it (TODO: shouldn't be array but proper result object)
         return array(
+// ou-specific begins #8250 (until 2.6)
+/*
             'backup_destination' => backup_helper::store_backup_file($this->get_backupid(), $zipfile),
+*/
+            'backup_destination' => backup_helper::store_backup_file($this->get_backupid(), $zipfile,
+                    $this->task->get_progress()),
+// ou-specific ends #8250 (until 2.6)
             'include_file_references_to_external_content' => $has_file_references
         );
     }
@@ -1967,6 +2062,10 @@ class backup_annotate_all_user_files extends backup_execution_step {
         // Fetch all annotated (final) users
         $rs = $DB->get_recordset('backup_ids_temp', array(
             'backupid' => $this->get_backupid(), 'itemname' => 'userfinal'));
+// ou-specific begins #8250 (until 2.6)
+        $progress = $this->task->get_progress();
+        $progress->start_progress($this->get_name());
+// ou-specific ends #8250 (until 2.6)
         foreach ($rs as $record) {
             $userid = $record->itemid;
             $userctx = context_user::instance($userid, IGNORE_MISSING);
@@ -1978,8 +2077,14 @@ class backup_annotate_all_user_files extends backup_execution_step {
                 // We don't need to specify itemid ($userid - 5th param) as far as by
                 // context we can get all the associated files. See MDL-22092
                 backup_structure_dbops::annotate_files($this->get_backupid(), $userctx->id, 'user', $filearea, null);
+// ou-specific begins #8250 (until 2.6)
+                $progress->progress();
+// ou-specific ends #8250 (until 2.6)
             }
         }
+// ou-specific begins #8250 (until 2.6)
+        $progress->end_progress();
+// ou-specific ends #8250 (until 2.6)
         $rs->close();
     }
 }

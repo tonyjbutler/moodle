@@ -19,6 +19,17 @@ if ($hassiteconfig) { // speedup for non-admins, add all caps used on this page
     $enablecssoptimiser->set_updatedcallback('theme_reset_all_caches');
     $temp->add($enablecssoptimiser);
 
+// ou-specific begins #8250 (until 2.6)
+    // Backup archive .mbz format: switching to .tar.gz enables larger files, better
+    // progress reporting and possibly better performance. This is an experimental
+    // setting but if successful, should be removed and enabled by default in a future
+    // version. Note: this setting controls newly-created backups only; restore always
+    // supports both formats.
+    $temp->add(new admin_setting_configcheckbox('enabletgzbackups',
+            new lang_string('enabletgzbackups', 'admin'),
+            new lang_string('enabletgzbackups_desc', 'admin'), 0));
+
+// ou-specific ends #8250 (until 2.6)
     $ADMIN->add('experimental', $temp);
 
     // "debugging" settingpage

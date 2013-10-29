@@ -72,10 +72,31 @@ if (!check_dir_exists($tmpdir, true, true)) {
 // choose the backup file from backup files tree
 if ($action == 'choosebackupfile') {
     if ($fileinfo = $browser->get_file_info($filecontext, $component, $filearea, $itemid, $filepath, $filename)) {
+// ou-specific begins #8250 (until 2.6)
+/*
         $filename = restore_controller::get_tempdir_name($course->id, $USER->id);
         $pathname = $tmpdir . '/' . $filename;
         $fileinfo->copy_to_pathname($pathname);
         $restore_url = new moodle_url('/backup/restore.php', array('contextid'=>$contextid, 'filename'=>$filename));
+*/
+        if (is_a($fileinfo, 'file_info_stored')) {
+            // Use the contenthash rather than copying the file where possible,
+            // to improve performance and avoid timeouts with large files.
+            $fs = get_file_storage();
+            $params = $fileinfo->get_params();
+            $file = $fs->get_file($params['contextid'], $params['component'], $params['filearea'],
+                    $params['itemid'], $params['filepath'], $params['filename']);
+            $restore_url = new moodle_url('/backup/restore.php', array('contextid' => $contextid,
+                    'pathnamehash' => $file->get_pathnamehash(), 'contenthash' => $file->get_contenthash()));
+        } else {
+            // If it's some weird other kind of file then use old code.
+            $filename = restore_controller::get_tempdir_name($course->id, $USER->id);
+            $pathname = $tmpdir . '/' . $filename;
+            $fileinfo->copy_to_pathname($pathname);
+            $restore_url = new moodle_url('/backup/restore.php', array(
+                    'contextid' => $contextid, 'filename' => $filename));
+        }
+// ou-specific ends #8250 (until 2.6)
         redirect($restore_url);
     } else {
         redirect($url, get_string('filenotfound', 'error'));
