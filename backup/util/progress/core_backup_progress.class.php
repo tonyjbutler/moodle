@@ -33,7 +33,7 @@ abstract class core_backup_progress {
     /**
      * @var int The number of seconds that can pass without progress() calls.
      */
-    const TIME_LIMIT_WITHOUT_PROGRESS = 120;
+    const TIME_LIMIT_WITHOUT_PROGRESS = 300;
 
     /**
      * @var int Time of last progress call.
