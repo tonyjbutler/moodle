@@ -191,7 +191,7 @@ if ($backup->get_stage() == backup_ui::STAGE_FINAL) {
 
 // ou-specific ends #8250 (until 2.6)
     // Display a notification and a continue button
-    echo $OUTPUT->header();
+    //echo $OUTPUT->header();
     if ($warnings) {
         echo $OUTPUT->box_start();
         echo $OUTPUT->notification(get_string('warning'), 'notifywarning');
