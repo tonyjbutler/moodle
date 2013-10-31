@@ -1749,17 +1749,7 @@ class backup_zip_contents extends backup_execution_step implements file_progress
 // ou-specific ends #8250 (until 2.6)
 
         // Zip files
-// ou-specific begins #8250 (until 2.6)
-/*
         $result = $zippacker->archive_to_pathname($files, $zipfile, true, $this);
-*/
-        $zippacker->archive_to_pathname($files, $zipfile, true, $this);
-
-        // If any progress happened, end it.
-        if ($this->startedprogress) {
-            $this->task->get_progress()->end_progress();
-        }
-// ou-specific ends #8250 (until 2.6)
 
         // Something went wrong.
         if ($result === false) {
@@ -1773,6 +1763,13 @@ class backup_zip_contents extends backup_execution_step implements file_progress
             @unlink($zipfile);
             throw new backup_step_exception('error_zip_packing', '', $e->debuginfo);
         }
+
+// ou-specific begins #8250 (until 2.6)
+        // If any progress happened, end it.
+        if ($this->startedprogress) {
+            $this->task->get_progress()->end_progress();
+        }
+// ou-specific ends #8250 (until 2.6)
     }
 // ou-specific begins #8250 (until 2.6)
 
