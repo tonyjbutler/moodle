@@ -527,7 +527,7 @@ abstract class backup_cron_automated_helper {
             // Detect if the backup_auto_running semaphore is a valid one
             // by looking for recent activity in the backup_controllers table
             // for backups of type backup::MODE_AUTOMATED
-            $timetosee = 60 * 360; // Time to consider in order to clean the semaphore
+            $timetosee = 60 * 90; // Time to consider in order to clean the semaphore
             $params = array( 'purpose'   => backup::MODE_AUTOMATED, 'timetolook' => (time() - $timetosee));
             if ($DB->record_exists_select('backup_controllers',
                 "operation = 'backup' AND type = 'course' AND purpose = :purpose AND timemodified > :timetolook", $params)) {
