@@ -43,6 +43,7 @@ $handlers = array(
  *       (it is just abusing cron to do very time consuming things which is wrong any way)
  *
  * TODO: this has to be moved into separate queueing framework....
+ * TODO: MDL-25508, MDL-41541
  */
     'portfolio_send' => array (
         'handlerfile'      => '/lib/portfoliolib.php',
