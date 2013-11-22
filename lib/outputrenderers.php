@@ -890,6 +890,11 @@ class core_renderer extends renderer_base {
                 $performanceinfo = $perf['html'];
             }
         }
+
+        // We always want performance data when running a performance test, even if the user is redirected to another page.
+        if (MDL_PERF_TEST && strpos($footer, $this->unique_performance_info_token) === false) {
+            $footer = $this->unique_performance_info_token . $footer;
+        }
         $footer = str_replace($this->unique_performance_info_token, $performanceinfo, $footer);
 
         $footer = str_replace($this->unique_end_html_token, $this->page->requires->get_end_code(), $footer);
@@ -1241,7 +1246,6 @@ class core_renderer extends renderer_base {
      * @return string the HTML to be output.
      */
     public function blocks_for_region($region) {
-        $region = $this->page->apply_theme_region_manipulations($region);
         $blockcontents = $this->page->blocks->get_content_for_region($region, $this);
         $blocks = $this->page->blocks->get_blocks_for_region($region);
         $lastblock = null;
@@ -3063,8 +3067,8 @@ EOD;
             'data-blockregion' => $displayregion,
             'data-droptarget' => '1'
         );
-        if ($this->page->blocks->region_has_content($region, $this)) {
-            $content = $this->blocks_for_region($region);
+        if ($this->page->blocks->region_has_content($displayregion, $this)) {
+            $content = $this->blocks_for_region($displayregion);
         } else {
             $content = '';
         }
