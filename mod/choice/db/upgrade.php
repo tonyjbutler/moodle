@@ -40,6 +40,17 @@ function xmldb_choice_upgrade($oldversion) {
     // Moodle v2.5.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2014011700) {
+        // Define field includeinactive to be added to choice.
+        $table = new xmldb_table('choice');
+        $field = new xmldb_field('includeinactive', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'showunanswered');
+
+        // Conditionally launch add field includeactive.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2014011700, 'choice');
+    }
 
     return true;
 }
