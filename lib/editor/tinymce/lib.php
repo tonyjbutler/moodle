@@ -103,6 +103,8 @@ class tinymce_texteditor extends texteditor {
 
         $context = empty($options['context']) ? context_system::instance() : $options['context'];
 
+        $plugins = empty($options['plugins']) ? '' : ',' . $options['plugins'];
+
         $config = get_config('editor_tinymce');
         if (!isset($config->disabledsubplugins)) {
             $config->disabledsubplugins = '';
@@ -135,7 +137,7 @@ class tinymce_texteditor extends texteditor {
             'plugins' => 'lists,table,style,layer,advhr,advlink,emotions,inlinepopups,' .
                 'searchreplace,paste,directionality,fullscreen,nonbreaking,contextmenu,' .
                 'insertdatetime,save,iespell,preview,print,noneditable,visualchars,' .
-                'xhtmlxtras,template,pagebreak',
+                'xhtmlxtras,template,pagebreak' . $plugins,
             'gecko_spellcheck' => true,
             'theme_advanced_font_sizes' => "1,2,3,4,5,6,7",
             'theme_advanced_layout_manager' => "SimpleLayout",

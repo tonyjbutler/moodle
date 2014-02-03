@@ -142,6 +142,13 @@ class assign_submission_onlinetext extends assign_submission_plugin {
             $data->onlinetextformat = editors_get_preferred_format();
         }
 
+        // Add 'wordcount' plugin if using TinyMCE editor.
+        $editortype = get_class(editors_get_preferred_editor($data->onlinetextformat));
+
+        if ($editortype == 'tinymce_texteditor') {
+            $editoroptions['plugins'] = 'wordcount';
+        }
+
         if ($submission) {
             $onlinetextsubmission = $this->get_onlinetext_submission($submission->id);
             if ($onlinetextsubmission) {
