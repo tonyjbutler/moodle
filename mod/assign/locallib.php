@@ -2334,10 +2334,10 @@ class assign {
                 }
 
                 if ($this->is_blind_marking()) {
-                    $prefix = str_replace('_', ' ', $groupname . get_string('participant', 'assign'));
+                    $prefix = str_replace(' ', '_', $groupname . get_string('participant', 'assign'));
                     $prefix = clean_filename($prefix . '_' . $this->get_uniqueid_for_user($userid) . '_');
                 } else {
-                    $prefix = str_replace('_', ' ', $groupname . fullname($student));
+                    $prefix = str_replace(' ', '_', $groupname . fullname($student));
                     $prefix = clean_filename($prefix . '_' . $this->get_uniqueid_for_user($userid) . '_');
                 }
 
