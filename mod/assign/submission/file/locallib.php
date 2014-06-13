@@ -71,6 +71,7 @@ class assign_submission_file extends assign_submission_plugin {
 
         $defaultmaxfilesubmissions = $this->get_config('maxfilesubmissions');
         $defaultmaxsubmissionsizebytes = $this->get_config('maxsubmissionsizebytes');
+        $defaultrestricttypes = $this->get_config('restricttypes');
 
         $settings = array();
         $options = array();
@@ -105,6 +106,47 @@ class assign_submission_file extends assign_submission_plugin {
         $mform->disabledIf('assignsubmission_file_maxsizebytes',
                            'assignsubmission_file_enabled',
                            'notchecked');
+
+        $name = get_string('restricttypes', 'assignsubmission_file');
+        $mform->addElement('selectyesno', 'assignsubmission_file_restricttypes', $name);
+        $mform->addHelpButton('assignsubmission_file_restricttypes', 'restricttypes', 'assignsubmission_file');
+        $mform->setDefault('assignsubmission_file_restricttypes', $defaultrestricttypes);
+        $mform->disabledIf('assignsubmission_file_restricttypes', 'assignsubmission_file_enabled', 'notchecked');
+
+        $optgroups = array();
+        foreach ($this->get_all_typegroups() as $group) {
+            $optgroups[$group] = get_string("group:$group", 'mimetypes');
+        }
+        core_collator::asort($optgroups, core_collator::SORT_NATURAL);
+
+        $groupels = array();
+        foreach ($optgroups as $group => $groupname) {
+            $options = array();
+            foreach (file_get_typegroup('type', $group) as $type) {
+                $a = new stdClass();
+                $a->name = get_mimetype_description($type);
+                $a->extlist = implode(' ', file_get_typegroup('extension', $type));
+                $options[$type] = get_string('filetypewithexts', 'assignsubmission_file', $a);
+            }
+            core_collator::asort($options, core_collator::SORT_NATURAL);
+
+            $groupels[] = $mform->createElement('checkbox', $group, '', html_writer::tag('strong', $groupname));
+            foreach ($options as $key => $value) {
+                $groupels[] = $mform->createElement('checkbox', $key, '', $value);
+            }
+        }
+
+        $name = get_string('acceptedfiletypes', 'assignsubmission_file');
+        $mform->addGroup($groupels, 'assignsubmission_file_filetypes', $name, '<br/>');
+        $mform->disabledIf('assignsubmission_file_filetypes', 'assignsubmission_file_restricttypes', 'eq', '0');
+        $mform->disabledIf('assignsubmission_file_filetypes', 'assignsubmission_file_enabled', 'notchecked');
+
+        $name = get_string('filetypesother', 'assignsubmission_file');
+        $mform->addElement('text', 'assignsubmission_file_filetypesother', $name, 'size="30"');
+        $mform->setType('assignsubmission_file_filetypesother', PARAM_RAW_TRIMMED);
+        $mform->addHelpButton('assignsubmission_file_filetypesother', 'filetypesother', 'assignsubmission_file');
+        $mform->disabledIf('assignsubmission_file_filetypesother', 'assignsubmission_file_restricttypes', 'eq', '0');
+        $mform->disabledIf('assignsubmission_file_filetypesother', 'assignsubmission_file_enabled', 'notchecked');
     }
 
     /**
@@ -116,6 +158,18 @@ class assign_submission_file extends assign_submission_plugin {
     public function save_settings(stdClass $data) {
         $this->set_config('maxfilesubmissions', $data->assignsubmission_file_maxfiles);
         $this->set_config('maxsubmissionsizebytes', $data->assignsubmission_file_maxsizebytes);
+        $this->set_config('restricttypes', $data->assignsubmission_file_restricttypes);
+
+        $filetypeslist = array();
+        if (isset($data->assignsubmission_file_filetypes) &&
+                is_array($data->assignsubmission_file_filetypes)) {
+            $filetypeslist = array_keys($data->assignsubmission_file_filetypes, 1);
+        }
+        if ($data->assignsubmission_file_filetypesother !== '') {
+            $filetypeslist[] = $this->normalise_filetypelist($data->assignsubmission_file_filetypesother);
+        }
+        $this->set_config('filetypeslist', implode(';', $filetypeslist));
+
         return true;
     }
 
@@ -128,7 +182,7 @@ class assign_submission_file extends assign_submission_plugin {
         $fileoptions = array('subdirs'=>1,
                                 'maxbytes'=>$this->get_config('maxsubmissionsizebytes'),
                                 'maxfiles'=>$this->get_config('maxfilesubmissions'),
-                                'accepted_types'=>'*',
+                                'accepted_types'=>$this->get_accepted_types(),
                                 'return_types'=>FILE_INTERNAL);
         if ($fileoptions['maxbytes'] == 0) {
             // Use module default.
@@ -162,6 +216,30 @@ class assign_submission_file extends assign_submission_plugin {
                                                   ASSIGNSUBMISSION_FILE_FILEAREA,
                                                   $submissionid);
         $mform->addElement('filemanager', 'files_filemanager', $this->get_name(), null, $fileoptions);
+
+        if ($this->get_config('restricttypes')) {
+            $text = html_writer::tag('p', get_string('filesofthesetypes', 'assignsubmission_file'));
+            $text .= html_writer::start_tag('ul');
+
+            $typesets = $this->get_configured_typesets();
+            foreach ($typesets['sets'] as $type) {
+                $a = new stdClass();
+                if (strpos($type, '/') !== false) {
+                    $a->name = get_mimetype_description($type);
+                } else {
+                    $a->name = get_string("group:$type", 'mimetypes');
+                }
+                $a->extlist = implode(' ', file_get_typegroup('extension', $type));
+                $text .= html_writer::tag('li', get_string('filetypewithexts', 'assignsubmission_file', $a));
+            }
+            if ($typesets['exts']) {
+                $text .= html_writer::tag('li', get_string('filetypesotherlist', 'assignsubmission_file',
+                        implode(' ', $typesets['exts'])));
+            }
+
+            $text .= html_writer::end_tag('ul');
+            $mform->addElement('static', '', '', $text);
+        }
 
         return true;
     }
@@ -531,5 +609,115 @@ class assign_submission_file extends assign_submission_plugin {
                 'The id of a draft area containing files for this submission.'
             )
         );
+    }
+
+
+    /**
+     * Set default values that demand a little extra effort.
+     *
+     * @param array $defaultvalues
+     */
+    public function data_preprocessing(&$defaultvalues) {
+        $typesconfig = $this->get_configured_typesets();
+
+        $defaultvalues['assignsubmission_file_filetypes'] = array();
+        foreach ($typesconfig['sets'] as $entry) {
+            $defaultvalues['assignsubmission_file_filetypes'][$entry] = 1;
+        }
+        $defaultvalues['assignsubmission_file_filetypesother'] = implode(', ', $typesconfig['exts']);
+    }
+
+
+    /**
+     * Fetch all the known typegroups.
+     * @return array
+     */
+    private function get_all_typegroups() {
+        $typegroups = array();
+        foreach (get_mimetypes_array() as $info) {
+            if (!empty($info['groups'])) {
+                $typegroups = array_merge($typegroups, $info['groups']);
+            }
+        }
+        return array_unique($typegroups);
+    }
+
+    /**
+     * Get the type sets configured for this assignment.
+     *
+     * @return array('sets' => array('groupname', 'mime/type', ...), 'exts' => array('.extension', ...))
+     */
+    private function get_configured_typesets() {
+        $typeslist = (string)$this->get_config('filetypeslist');
+        $typegroups = $this->get_all_typegroups();
+
+        $sets = array();
+        $exts = array();
+
+        if ($typeslist !== '') {
+            foreach (explode(';', $typeslist) as $type) {
+                if ($type[0] == '.') {
+                    // A file extension.
+                    $exts[] = $type;
+                } else if (strpos($type, '/') !== false) {
+                    // A mimetype.
+                    $sets[] = $type;
+                } else {
+                    // A group name.
+                    if (in_array($type, $typegroups)) {
+                        $sets[] = $type;
+                    }
+                }
+            }
+            $exts = array_unique($exts);
+        }
+
+        return compact('sets', 'exts');
+    }
+
+
+    /**
+     * Sanitise user input of file types into a consistent internal format.
+     *
+     * @param string $typestring a list of file types.
+     * @return string a normalised type string.
+     */
+    private function normalise_filetypelist($typestring) {
+        $sanetypes = array();
+
+        $types = preg_split('/[,;\s]+/', strtolower($typestring));
+        foreach ($types as $type) {
+            $type = ltrim($type, '*.');
+
+            if (preg_match('/[^a-z0-9._-]/', $type)) {
+                // Invalid file extension. Drop it for now.
+                // This really should throw a validation error back
+                // to the user though.
+                continue;
+            }
+
+            $sanetypes[] = '.' . $type;
+        }
+
+        natsort($sanetypes);
+        return implode(';', $sanetypes);
+    }
+
+    /**
+     * Return the accepted types list for the file manager component.
+     *
+     * @return array
+     */
+    private function get_accepted_types() {
+        $accepted_types = '*';
+
+        $restricttypes = $this->get_config('restricttypes');
+        $typeslist = (string)$this->get_config('filetypeslist');
+
+        if ($restricttypes && $typeslist !== '') {
+            $accepted_types = explode(';', $typeslist);
+        }
+
+        return $accepted_types;
     }
 }
