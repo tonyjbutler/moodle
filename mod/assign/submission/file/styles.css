@@ -1,0 +1,22 @@
+#page-mod-assign-mod #fgroup_id_assignsubmission_file_filetypes .felement {
+    max-height: 15em;
+    overflow-y: scroll;
+}
+#page-mod-assign-mod #fgroup_id_assignsubmission_file_filetypes .felement span {
+    display: block;
+}
+#page-mod-assign-mod #fgroup_id_assignsubmission_file_filetypes .felement span[class~=duperef] {
+    margin-left: 1.5em;
+    font-style: italic;
+}
+
+#page-mod-assign-mod #fgroup_id_assignsubmission_file_filetypes .felement input[class~=type] {
+    margin-left: 1.5em;
+}
+#page-mod-assign-mod #fgroup_id_assignsubmission_file_filetypes .felement input[class~=group-all] + label {
+    font-weight: bold;
+}
+#page-mod-assign-mod #fgroup_id_assignsubmission_file_filetypes .felement input[class~=type][disabled],
+#page-mod-assign-mod #fgroup_id_assignsubmission_file_filetypes .felement input[class~=type][disabled] + label {
+    display: none;
+}
