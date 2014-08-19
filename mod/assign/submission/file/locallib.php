@@ -67,7 +67,7 @@ class assign_submission_file extends assign_submission_plugin {
      * @return void
      */
     public function get_settings(MoodleQuickForm $mform) {
-        global $CFG, $COURSE;
+        global $CFG, $COURSE, $PAGE;
 
         $defaultmaxfilesubmissions = $this->get_config('maxfilesubmissions');
         $defaultmaxsubmissionsizebytes = $this->get_config('maxsubmissionsizebytes');
@@ -120,8 +120,6 @@ class assign_submission_file extends assign_submission_plugin {
         core_collator::asort($optgroups, core_collator::SORT_NATURAL);
 
         $groupels = array();
-        $uniquetypes = array();
-
         foreach ($optgroups as $group => $groupname) {
             $options = array();
             foreach (file_get_typegroup('type', $group) as $type) {
@@ -134,17 +132,8 @@ class assign_submission_file extends assign_submission_plugin {
 
             $groupels[] = $mform->createElement('checkbox', $group, '', $groupname, array('class' => 'group-all'));
             foreach ($options as $key => $value) {
-                if (!isset($uniquetypes[$key])) {
-                    $groupels[] = $mform->createElement('checkbox', $key, '', $value, array('class' => 'type'));
-                    $mform->disabledIf("assignsubmission_file_filetypes[$key]", "assignsubmission_file_filetypes[$group]", 'checked');
-                    $uniquetypes[$key] = $group;
-                } else {
-                    $a = new stdClass();
-                    $a->name = $value;
-                    $a->groupname = $optgroups[$uniquetypes[$key]];
-                    $groupels[] = $mform->createElement('static', '', '',
-                            html_writer::span(get_string('groupduplicatetyperef', 'assignsubmission_file', $a), 'duperef'));
-                }
+                $groupels[] = $mform->createElement('checkbox', $key, '', $value, array('class' => 'type', 'data-group' => $group));
+                $uniquetypes[$key] = $group;
             }
         }
 
@@ -152,6 +141,13 @@ class assign_submission_file extends assign_submission_plugin {
         $mform->addGroup($groupels, 'assignsubmission_file_filetypes', $name, '');
         $mform->disabledIf('assignsubmission_file_filetypes', 'assignsubmission_file_restricttypes', 'eq', '0');
         $mform->disabledIf('assignsubmission_file_filetypes', 'assignsubmission_file_enabled', 'notchecked');
+
+        $module = array(
+            'name' => 'assignsubmission_file',
+            'fullpath' => '/mod/assign/submission/file/module.js',
+            'requires' => array('node', 'event'),
+            );
+        $PAGE->requires->js_init_call('M.assignsubmission_file.init_filetypes_config', null, false, $module);
 
         $name = get_string('filetypesother', 'assignsubmission_file');
         $mform->addElement('text', 'assignsubmission_file_filetypesother', $name, 'size="30"');

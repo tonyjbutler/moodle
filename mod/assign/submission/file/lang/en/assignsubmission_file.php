@@ -37,7 +37,6 @@ $string['filetypewithexts'] = '{$a->name} &mdash; {$a->extlist}';
 $string['filetypesother'] = 'Other accepted file types';
 $string['filetypesother_help'] = 'Specify your own allowed file types as a comma-separated list. For example: <samp>dwg, .psd, *.tar.xz</samp>';
 $string['filetypesotherlist'] = 'Other file types ({$a})';
-$string['groupduplicatetyperef'] = '{$a->name} can be found under "{$a->groupname}"';
 $string['maxbytes'] = 'Maximum file size';
 $string['maxfiles'] = 'Maximum files per submission';
 $string['maxfiles_help'] = 'If file submissions are enabled, each assignment can be set to accept up to this number of files for their submission.';
