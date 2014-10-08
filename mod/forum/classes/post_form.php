@@ -236,7 +236,11 @@ class mod_forum_post_form extends moodleform {
      * @return array of errors.
      */
     function validation($data, $files) {
+        global $CFG;
+
+        $cmid = $this->_customdata['cm']->id;
         $errors = parent::validation($data, $files);
+
         if (($data['timeend']!=0) && ($data['timestart']!=0) && $data['timeend'] <= $data['timestart']) {
             $errors['timeend'] = get_string('timestartenderror', 'forum');
         }
@@ -246,6 +250,13 @@ class mod_forum_post_form extends moodleform {
         if (empty($data['subject'])) {
             $errors['subject'] = get_string('erroremptysubject', 'forum');
         }
+        if (!empty($CFG->enableplagiarism)) {
+            require_once($CFG->libdir . '/plagiarismlib.php');
+            if ($failure = plagiarism_precheck_submission($cmid, $data['userid'])) {
+                $errors = array_merge($errors, $failure);
+            }
+        }
+
         return $errors;
     }
 }

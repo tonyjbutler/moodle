@@ -995,12 +995,12 @@ if (!empty($parent)) {
 } else {
     if (!empty($forum->intro)) {
         echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
-
-        if (!empty($CFG->enableplagiarism)) {
-            require_once($CFG->libdir.'/plagiarismlib.php');
-            echo plagiarism_print_disclosure($cm->id);
-        }
     }
+}
+
+if (!empty($CFG->enableplagiarism)) {
+    require_once($CFG->libdir . '/plagiarismlib.php');
+    echo plagiarism_print_disclosure($cm->id);
 }
 
 if (!empty($formheading)) {
