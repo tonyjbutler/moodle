@@ -160,6 +160,38 @@ function plagiarism_print_disclosure($cmid) {
     }
     return $output;
 }
+
+/**
+ * Check that any external dependencies are satisfied before accepting a user's submission.
+ *
+ * @param int $cmid The ID of the course module
+ * @param int $userid The ID of the current user
+ * @return array An array of error messages returned by the plugins
+ */
+function plagiarism_precheck_submission($cmid, $userid) {
+    global $CFG;
+
+    $errors = array();
+
+    if (!empty($CFG->enableplagiarism)) {
+        $plagiarismplugins = plagiarism_load_available_plugins();
+
+        foreach ($plagiarismplugins as $plugin => $dir) {
+            require_once($dir . '/lib.php');
+            $plagiarismclass = 'plagiarism_plugin_' . $plugin;
+            $plagiarismplugin = new $plagiarismclass;
+            if (method_exists($plagiarismplugin, 'precheck_submission')) {
+                $status[$plugin] = $plagiarismplugin->precheck_submission($cmid, $userid);
+                if ($status[$plugin]->success === false) {
+                    $errors[$plugin] = $status[$plugin]->message;
+                }
+            }
+        }
+    }
+
+    return $errors;
+}
+
 /**
  * used by admin/cron.php to get similarity scores from submitted files.
  *

@@ -83,6 +83,17 @@ class plagiarism_plugin {
      */
     public function print_disclosure($cmid) {
     }
+
+    /**
+     * Hook to check that any external dependencies are satisfied before accepting a user's submission.
+     *
+     * @param int $cmid The ID of the course module
+     * @param int $userid The ID of the current user
+     * @return array An array of error messages returned by the plugins
+     */
+    public function precheck_submission($cmid, $userid) {
+    }
+
     /**
      * hook to allow status of submitted files to be updated - called on grading/report pages.
      *
