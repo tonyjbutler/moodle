@@ -3301,6 +3301,28 @@ class assign {
     }
 
     /**
+     * Check that any external plagiarism dependencies are satisfied before accepting the submission.
+     *
+     * @param int $userid The ID of the current user
+     * @return array An array of error messages returned by the plagiarism plugins
+     */
+    protected function plagiarism_precheck_submission($userid) {
+        global $CFG;
+
+        $cmid = $this->coursemodule->id;
+
+        if (!empty($CFG->enableplagiarism)) {
+            require_once($CFG->libdir . '/plagiarismlib.php');
+
+            if ($errors = plagiarism_precheck_submission($cmid, $userid)) {
+                return $errors;
+            }
+        }
+
+        return array();
+    }
+
+    /**
      * Message for students when assignment submissions have been closed.
      *
      * @param string $title The page title
@@ -3725,6 +3747,11 @@ class assign {
                     $notifications[] = $check;
                 }
             }
+        }
+        // Check for any external plagiarism dependencies before accepting submission.
+        if ($errors = $this->plagiarism_precheck_submission($USER->id)) {
+            $notifications = array_merge($notifications, $errors);
+            $notifications[] = $this->plagiarism_print_disclosure();
         }
 
         $data = new stdClass();
@@ -5702,6 +5729,12 @@ class assign {
             if ($allempty) {
                 $notices[] = get_string('submissionempty', 'mod_assign');
             }
+            return false;
+        }
+
+        // Check for any external plagiarism dependencies before accepting submission.
+        if ($errors = $this->plagiarism_precheck_submission($userid)) {
+            $notices = array_merge($notices, $errors);
             return false;
         }
 
