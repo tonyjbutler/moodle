@@ -88,6 +88,13 @@ class workshop_submission_form extends moodleform {
             }
         }
 
+        if (!empty($CFG->enableplagiarism)) {
+            require_once($CFG->libdir . '/plagiarismlib.php');
+            if ($failure = plagiarism_precheck_submission($data['cmid'], $USER->id)) {
+                $errors = array_merge($errors, $failure);
+            }
+        }
+
         return $errors;
     }
 }
