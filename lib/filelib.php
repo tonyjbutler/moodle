@@ -1400,7 +1400,7 @@ function &get_mimetypes_array() {
         'asc'  => array ('type'=>'text/plain', 'icon'=>'sourcecode'),
         'asm'  => array ('type'=>'text/plain', 'icon'=>'sourcecode'),
         'au'   => array ('type'=>'audio/au', 'icon'=>'audio', 'groups'=>array('audio'), 'string'=>'audio'),
-        'avi'  => array ('type'=>'video/x-ms-wm', 'icon'=>'avi', 'groups'=>array('video','web_video'), 'string'=>'video'),
+        'avi'  => array ('type'=>'video/x-msvideo', 'icon'=>'avi', 'groups'=>array('video','web_video'), 'string'=>'video'),
         'bmp'  => array ('type'=>'image/bmp', 'icon'=>'bmp', 'groups'=>array('image'), 'string'=>'image'),
         'c'    => array ('type'=>'text/plain', 'icon'=>'sourcecode'),
         'cct'  => array ('type'=>'shockwave/director', 'icon'=>'flash'),
