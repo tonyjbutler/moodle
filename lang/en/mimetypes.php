@@ -36,17 +36,27 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['application/epub_zip'] = 'EPUB ebook';
 $string['application/msword'] = 'Word document';
 $string['application/pdf'] = 'PDF document';
 $string['application/vnd.moodle.backup'] = 'Moodle backup';
 $string['application/vnd.ms-excel'] = 'Excel spreadsheet';
+$string['application/vnd.ms-excel.sheet.macroEnabled.12'] = 'Excel 2007 macro-enabled workbook';
 $string['application/vnd.ms-powerpoint'] = 'Powerpoint presentation';
+$string['application/vnd.oasis.opendocument.spreadsheet'] = 'OpenDocument Spreadsheet';
+$string['application/vnd.oasis.opendocument.spreadsheet-template'] = 'OpenDocument Spreadsheet template';
+$string['application/vnd.oasis.opendocument.text'] = 'OpenDocument Text document';
+$string['application/vnd.oasis.opendocument.text-template'] = 'OpenDocument Text template';
+$string['application/vnd.oasis.opendocument.text-web'] = 'OpenDocument Web page template';
 $string['application/vnd.openxmlformats-officedocument.presentationml.presentation'] = 'Powerpoint presentation';
 $string['application/vnd.openxmlformats-officedocument.presentationml.slideshow'] = 'Powerpoint slideshow';
 $string['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] = 'Excel spreadsheet';
 $string['application/vnd.openxmlformats-officedocument.spreadsheetml.template'] = 'Excel template';
 $string['application/vnd.openxmlformats-officedocument.wordprocessingml.document'] = 'Word document';
-$string['application/epub_zip'] = 'EPUB ebook';
+$string['application/x-javascript'] = 'JavaScript source';
+$string['application/x-mspublisher'] = 'Publisher document';
+$string['application/x-shockwave-flash'] = 'Flash animation';
+$string['application/xhtml_xml'] = 'XHTML document';
 $string['archive'] = 'Archive ({$a->EXT})';
 $string['audio'] = 'Audio file ({$a->EXT})';
 $string['default'] = '{$a->mimetype}';
@@ -63,6 +73,10 @@ $string['group:web_file'] = 'Web files';
 $string['group:web_image'] = 'Web-safe image files';
 $string['group:web_video'] = 'Web-safe video files';
 $string['image'] = 'Image ({$a->MIMETYPE2})';
+$string['image/vnd.microsoft.icon'] = 'Windows icon';
+$string['text/css'] = 'Cascading Style-Sheet';
+$string['text/csv'] = 'Comma-separated values';
 $string['text/html'] = 'HTML document';
 $string['text/plain'] = 'Text file';
 $string['text/rtf'] = 'RTF document';
+$string['video'] = 'Video file ({$a->EXT})';
