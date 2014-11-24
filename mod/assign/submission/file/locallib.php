@@ -241,8 +241,12 @@ class assign_submission_file extends assign_submission_plugin {
                 $text .= html_writer::tag('li', get_string('filetypewithexts', 'assignsubmission_file', $a));
             }
             if ($typesets['exts']) {
-                $text .= html_writer::tag('li', get_string('filetypesotherlist', 'assignsubmission_file',
-                        implode(' ', $typesets['exts'])));
+                if ($typesets['sets']) {
+                    $strexts = get_string('filetypesotherlist', 'assignsubmission_file', implode(' ', $typesets['exts']));
+                } else {
+                    $strexts = implode(' ', $typesets['exts']);
+                }
+                $text .= html_writer::tag('li', $strexts);
             }
 
             $text .= html_writer::end_tag('ul');
