@@ -53,6 +53,9 @@ $string['application/vnd.openxmlformats-officedocument.presentationml.slideshow'
 $string['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] = 'Excel spreadsheet';
 $string['application/vnd.openxmlformats-officedocument.spreadsheetml.template'] = 'Excel template';
 $string['application/vnd.openxmlformats-officedocument.wordprocessingml.document'] = 'Word document';
+$string['application/x-iwork-keynote-sffkey'] = 'iWork Keynote presentation';
+$string['application/x-iwork-numbers-sffnumbers'] = 'iWork Numbers spreadsheet';
+$string['application/x-iwork-pages-sffpages'] = 'iWork Pages document';
 $string['application/x-javascript'] = 'JavaScript source';
 $string['application/x-mspublisher'] = 'Publisher document';
 $string['application/x-shockwave-flash'] = 'Flash animation';
