@@ -176,7 +176,13 @@ class assign_submission_file extends assign_submission_plugin {
         if ($data->assignsubmission_file_filetypesother !== '') {
             $filetypeslist[] = $this->normalise_filetypelist($data->assignsubmission_file_filetypesother);
         }
-        $this->set_config('filetypeslist', implode(';', $filetypeslist));
+        if (!empty($filetypeslist)) {
+            $this->set_config('restricttypes', 1);
+            $this->set_config('filetypeslist', implode(';', $filetypeslist));
+        } else {
+            $this->set_config('restricttypes', 0);
+            $this->set_config('filetypeslist', '');
+        }
 
         return true;
     }
