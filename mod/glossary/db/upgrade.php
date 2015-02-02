@@ -22,6 +22,8 @@
 function xmldb_glossary_upgrade($oldversion) {
     global $CFG, $DB;
 
+    $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
+
     // Automatically generated Moodle v3.3.0 release upgrade line.
     // Put any upgrade step following this.
 
@@ -102,6 +104,30 @@ function xmldb_glossary_upgrade($oldversion) {
 
     // Automatically generated Moodle v3.7.0 release upgrade line.
     // Put any upgrade step following this.
+
+    if ($oldversion < 2019090500) {
+
+        // Define field assessui to be added to glossary.
+        $table = new xmldb_table('glossary');
+        $field = new xmldb_field('assessui', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'assessed');
+
+        // Conditionally launch add field assessui.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field assessicon to be added to glossary.
+        $table = new xmldb_table('glossary');
+        $field = new xmldb_field('assessicon', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'assessui');
+
+        // Conditionally launch add field assessicon.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Glossary savepoint reached.
+        upgrade_mod_savepoint(true, 2019090500, 'glossary');
+    }
 
     return true;
 }

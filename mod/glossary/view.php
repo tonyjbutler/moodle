@@ -451,6 +451,8 @@ if ($allentries) {
         $ratingoptions->component = 'mod_glossary';
         $ratingoptions->ratingarea = 'entry';
         $ratingoptions->items = $allentries;
+        $ratingoptions->ui = $glossary->assessui;
+        $ratingoptions->buttonicon = $glossary->assessicon;
         $ratingoptions->aggregate = $glossary->assessed;//the aggregation method
         $ratingoptions->scaleid = $glossary->scale;
         $ratingoptions->userid = $USER->id;
