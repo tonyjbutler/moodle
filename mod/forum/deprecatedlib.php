@@ -486,6 +486,8 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
         $ratingoptions->component = 'mod_forum';
         $ratingoptions->ratingarea = 'post';
         $ratingoptions->items = $posts;
+        $ratingoptions->ui = $forum->assessui;
+        $ratingoptions->buttonicon = $forum->assessicon;
         $ratingoptions->aggregate = $forum->assessed;//the aggregation method
         $ratingoptions->scaleid = $forum->scale;
         $ratingoptions->userid = $USER->id;

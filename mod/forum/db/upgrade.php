@@ -157,5 +157,28 @@ function xmldb_forum_upgrade($oldversion) {
     // Automatically generated Moodle v3.7.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2019090500) {
+
+        // Define field assessui to be added to forum.
+        $table = new xmldb_table('forum');
+        $field = new xmldb_field('assessui', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'assessed');
+
+        // Conditionally launch add field assessui.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field assessicon to be added to forum.
+        $field = new xmldb_field('assessicon', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'assessui');
+
+        // Conditionally launch add field assessicon.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2019090500, 'forum');
+    }
+
     return true;
 }
