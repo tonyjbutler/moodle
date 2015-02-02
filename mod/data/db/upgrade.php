@@ -73,5 +73,29 @@ function xmldb_data_upgrade($oldversion) {
         // Data savepoint reached.
         upgrade_mod_savepoint(true, 2019052001, 'data');
     }
+
+    if ($oldversion < 2019090500) {
+
+        // Define field assessui to be added to data.
+        $table = new xmldb_table('data');
+        $field = new xmldb_field('assessui', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'assessed');
+
+        // Conditionally launch add field assessui.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field assessicon to be added to data.
+        $field = new xmldb_field('assessicon', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'assessui');
+
+        // Conditionally launch add field assessicon.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Data savepoint reached.
+        upgrade_mod_savepoint(true, 2019090500, 'data');
+    }
+
     return true;
 }

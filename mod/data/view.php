@@ -469,6 +469,8 @@ if ($showactivity) {
                     $ratingoptions->component = 'mod_data';
                     $ratingoptions->ratingarea = 'entry';
                     $ratingoptions->items = $records;
+                    $ratingoptions->ui = $data->assessui;
+                    $ratingoptions->buttonicon = $data->assessicon;
                     $ratingoptions->aggregate = $data->assessed;//the aggregation method
                     $ratingoptions->scaleid = $data->scale;
                     $ratingoptions->userid = $USER->id;
