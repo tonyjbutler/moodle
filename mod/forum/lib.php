@@ -446,6 +446,39 @@ function forum_cron_minimise_user_record(stdClass $user) {
 }
 
 /**
+ * Delete discussions after a configurable period of inactivity.
+ *
+ * @return bool Success status.
+ */
+function forum_cron_delete_stale_threads() {
+    global $DB;
+
+    if (!$forums = $DB->get_records_select('forum', "deleteperiod > ?", array(0), 'course ASC')) {
+        return true;
+    }
+    $currenttime = time();
+
+    foreach ($forums as $forum) {
+        $staletime = $currenttime - $forum->deleteperiod;
+        $select = "forum = :forumid AND timemodified < :staletime";
+        $params = array('forumid' => $forum->id, 'staletime' => $staletime);
+        if ($discussions = $DB->get_records_select('forum_discussions', $select, $params, '', 'id, course, forum, userid')) {
+            $course = get_course($forum->course);
+            $modinfo = get_fast_modinfo($course);
+            $cm = $modinfo->instances['forum'][$forum->id];
+
+            foreach ($discussions as $discussion) {
+                if (forum_delete_discussion($discussion, false, $course, $cm, $forum)) {
+                    mtrace('Stale forum discussion with id ' . $discussion->id . ' deleted');
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+/**
  * Function to be run periodically according to the scheduled task.
  *
  * Finds all posts that have yet to be mailed out, and mails them
@@ -1241,6 +1274,10 @@ function forum_cron() {
         }
     } else {
         set_config('forum_lastreadclean', time());
+    }
+
+    if (!forum_cron_delete_stale_threads()) {
+        mtrace('Error deleting stale forum discussions');
     }
 
     return true;

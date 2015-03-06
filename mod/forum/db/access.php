@@ -235,6 +235,15 @@ $capabilities = array(
         )
     ),
 
+    'mod/forum:deletediscussions' => array(
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+
     'mod/forum:editanypost' => array(
 
         'riskbitmask' => RISK_SPAM,
