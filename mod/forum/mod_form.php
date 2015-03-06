@@ -179,6 +179,15 @@ class mod_forum_mod_form extends moodleform_mod {
         plagiarism_get_form_elements_module($mform, $coursecontext, 'mod_forum');
 
 //-------------------------------------------------------------------------------
+        if (has_capability('mod/forum:deletediscussions', $coursecontext)) {
+            $mform->addElement('header', 'autodeletionheader', get_string('autodeletion', 'forum'));
+
+            $mform->addElement('duration', 'deleteperiod', get_string('deleteperiod', 'forum'),
+                    array('optional' => true, 'defaultunit' => 604800), array('size' => 4));
+            $mform->addHelpButton('deleteperiod', 'deleteperiod', 'forum');
+        }
+
+//-------------------------------------------------------------------------------
 
         $this->standard_grading_coursemodule_elements();
 
@@ -187,6 +196,26 @@ class mod_forum_mod_form extends moodleform_mod {
 // buttons
         $this->add_action_buttons();
 
+    }
+
+    /**
+     * Perform minimal validation on the settings form
+     * @param array $data
+     * @param array $files
+     */
+    public function validation($data, $files) {
+        global $CFG;
+
+        $errors = parent::validation($data, $files);
+
+        if (isset($data['deleteperiod']) && $data['deleteperiod'] > 0) {
+            $mindeleteperiod = $CFG->maxeditingtime * 2;
+            if ($data['deleteperiod'] < $mindeleteperiod) {
+                $errors['deleteperiod'] = get_string('deleteperiodinvalid', 'forum', format_time($mindeleteperiod));
+            }
+        }
+
+        return $errors;
     }
 
     function definition_after_data() {
