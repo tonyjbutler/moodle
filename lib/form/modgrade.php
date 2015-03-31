@@ -297,13 +297,7 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
         global $COURSE, $USER;
 
         // Check whether an appropriate scale already exists.
-        if (!$globalscales = grade_scale::fetch_all_global()) {
-            $globalscales = array();
-        }
-        if (!$localscales = grade_scale::fetch_all_local($COURSE->id)) {
-            $localscales = array();
-        }
-        $scales = array_merge($globalscales, $localscales);
+        $scales = $this->get_single_item_scales();
         foreach ($scales as $scale) {
             if ($scale->scale == ucfirst(strtolower($buttontext))) {
                 return $scale->id;
@@ -318,6 +312,48 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
         $scale->scale = $scale->name;
         $scale->description = get_string('scaledesc', 'rating', $scale->name);
         return $scale->insert();
+    }
+
+    /**
+     * Retrieve all single item scales suitable for use in the current course.
+     *
+     * @return array An array of suitable scales.
+     */
+    private function get_single_item_scales() {
+        global $COURSE;
+
+        if (!$globalscales = grade_scale::fetch_all_global()) {
+            $globalscales = array();
+        }
+        if (!$localscales = grade_scale::fetch_all_local($COURSE->id)) {
+            $localscales = array();
+        }
+        $scales = array_merge($globalscales, $localscales);
+
+        foreach ($scales as $key => $scale) {
+            if (strpos($scale->scale, ',') !== false) {
+                unset($scales[$key]);
+            }
+        }
+        return $scales;
+    }
+
+    /**
+     * Create an array of single item scales for a select list.
+     *
+     * @return array An array of scales or false if none found.
+     */
+    private function get_single_item_scales_menu() {
+        $scales = $this->get_single_item_scales();
+
+        if (empty($scales)) {
+            return false;
+        }
+
+        foreach($scales as $scale) {
+            $menu[$scale->id] = $scale->name;
+        }
+        return $menu;
     }
 
     /**
