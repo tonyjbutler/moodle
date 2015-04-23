@@ -106,11 +106,11 @@ function xmldb_forum_upgrade($oldversion) {
 
     if ($oldversion < 2018121300) {
 
-        // Define field deleteperiod to be added to forum.
+        // Define field hideperiod to be added to forum.
         $table = new xmldb_table('forum');
-        $field = new xmldb_field('deleteperiod', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'blockperiod');
+        $field = new xmldb_field('hideperiod', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'blockperiod');
 
-        // Conditionally launch add field deleteperiod.
+        // Conditionally launch add field hideperiod.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }

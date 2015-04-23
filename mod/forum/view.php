@@ -159,9 +159,9 @@
         echo $OUTPUT->notification(get_string('thisforumisthrottled', 'forum', $a));
     }
 
-    if (!empty($forum->deleteperiod)) {
-        $a = format_time($forum->deleteperiod);
-        echo $OUTPUT->notification(get_string('autodeletionconfigured', 'forum', $a));
+    if (!empty($forum->hideperiod)) {
+        $a = format_time($forum->hideperiod);
+        echo $OUTPUT->notification(get_string('autohidingconfigured', 'forum', $a));
     }
 
     if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {

@@ -235,7 +235,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/forum:deletediscussions' => array(
+    'mod/forum:hidediscussions' => array(
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
