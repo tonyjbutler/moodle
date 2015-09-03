@@ -1419,6 +1419,10 @@ class flexible_table {
      * @return string HTML fragment.
      */
     private function render_reset_button() {
+        if (!($this->persistent || $this->is_collapsible)) {
+            return '';
+        }
+
         $url = $this->baseurl->out(false, array($this->request[TABLE_VAR_RESET] => 1));
 
         $html  = html_writer::start_div('mdl-right');
