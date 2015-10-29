@@ -791,9 +791,11 @@ function badge_message_from_template($message, $params) {
  * @param int $page The page or records to return
  * @param int $perpage The number of records to return per page
  * @param int $user User specific search
+ * @param bool $lubadges Return LU Badge instances
  * @return array $badge Array of records matching criteria
  */
-function badges_get_badges($type, $courseid = 0, $sort = '', $dir = '', $page = 0, $perpage = BADGE_PERPAGE, $user = 0) {
+function badges_get_badges($type, $courseid = 0, $sort = '', $dir = '', $page = 0, $perpage = BADGE_PERPAGE, $user = 0,
+        $lubadges = false) {
     global $DB;
     $records = array();
     $params = array();
@@ -814,6 +816,18 @@ function badges_get_badges($type, $courseid = 0, $sort = '', $dir = '', $page = 
     if ($courseid != 0 ) {
         $where .= "AND b.courseid = :courseid ";
         $params['courseid'] = $courseid;
+    }
+
+    // Dirty LU hack alert!
+    if ($user == 0) {
+        $instanceids = $DB->get_fieldset_sql('SELECT instanceid FROM {local_lubadges_instances}');
+        if ($lubadges) {
+            $inornot = $DB->get_in_or_equal($instanceids, SQL_PARAMS_NAMED);
+        } else {
+            $inornot = $DB->get_in_or_equal($instanceids, SQL_PARAMS_NAMED, 'param', false);
+        }
+        $where .= "AND b.id " . $inornot[0];
+        $params = array_merge($params, $inornot[1]);
     }
 
     $sorting = (($sort != '' && $dir != '') ? 'ORDER BY ' . $sort . ' ' . $dir : '');
