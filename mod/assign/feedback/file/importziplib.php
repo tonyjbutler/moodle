@@ -125,6 +125,13 @@ class assignfeedback_file_zip_importer {
 
         if ($plugin->get_subtype() == 'assignsubmission') {
             $sg = $assignment->get_user_submission($user->id, false);
+            if ($assignment->get_instance()->teamsubmission) {
+                if ($group = $assignment->get_submission_group($user->id)) {
+                    $sg = $assignment->get_group_submission($user->id, $group->id, false);
+                } else {
+                    $sg = $assignment->get_group_submission($user->id, 0, false);
+                }
+            }
         } else if ($plugin->get_subtype() == 'assignfeedback') {
             $sg = $assignment->get_user_grade($user->id, false);
         } else {
@@ -135,7 +142,7 @@ class assignfeedback_file_zip_importer {
             return true;
         }
         foreach ($plugin->get_files($sg, $user) as $pluginfilename => $file) {
-            if ($pluginfilename == $filename) {
+            if (pathinfo($pluginfilename)['basename'] == pathinfo($filename)['basename']) {
                 // Extract the file and compare hashes.
                 $contenthash = '';
                 if (is_array($file)) {
@@ -226,9 +233,10 @@ class assignfeedback_file_zip_importer {
      *
      * @param assign $assignment - The assignment instance
      * @param assign_feedback_file $fileplugin - The file feedback plugin
+     * @param bool $applytoall Apply feedback to all members of a group?
      * @return string - The html response
      */
-    public function import_zip_files($assignment, $fileplugin) {
+    public function import_zip_files($assignment, $fileplugin, $applytoall) {
         global $CFG, $PAGE, $DB;
 
         core_php_time_limit::raise(ASSIGNFEEDBACK_FILE_MAXFILEUNZIPTIME);
@@ -249,6 +257,9 @@ class assignfeedback_file_zip_importer {
             $participants[$assignment->get_uniqueid_for_user($user->id)] = $user;
         }
 
+        // If applying the same file to all group members, we only want to process one copy of the file for each group.
+        $processedgroups = array();
+
         foreach ($files as $unzippedfile) {
             // Set the timeout for unzipping each file.
             $user = null;
@@ -257,52 +268,72 @@ class assignfeedback_file_zip_importer {
 
             if ($this->is_valid_filename_for_import($assignment, $unzippedfile, $participants, $user, $plugin, $filename)) {
                 if ($this->is_file_modified($assignment, $user, $plugin, $filename, $unzippedfile)) {
-                    $grade = $assignment->get_user_grade($user->id, true);
-
-                    // In 3.1 the default download structure of the submission files changed so that each student had their own
-                    // separate folder, the files were not renamed and the folder structure was kept. It is possible that
-                    // a user downloaded the submission files in 3.0 (or earlier) and edited the zip to add feedback or
-                    // changed the behavior back to the previous format, the following code means that we will still support the
-                    // old file structure. For more information please see - MDL-52489 / MDL-56022.
-                    $path = pathinfo($filename);
-                    if ($path['dirname'] == '.') { // Student submissions are not in separate folders.
-                        $basename = $filename;
-                        $dirname = "/";
-                        $dirnamewslash = "/";
-                    } else {
-                        $basename = $path['basename'];
-                        $dirname = $path['dirname'];
-                        $dirnamewslash = $dirname . "/";
+                    $users = array($user);
+                    if ($assignment->get_instance()->teamsubmission && $applytoall) {
+                        if (!array_key_exists($filename, $processedgroups)) {
+                            $processedgroups[$filename] = array();
+                        }
+                        $groupid = 0;
+                        if ($group = $assignment->get_submission_group($user->id)) {
+                            if (!in_array($group->id, $processedgroups[$filename])) {
+                                $groupid = $group->id;
+                            }
+                        }
+                        if ($groupid) {
+                            // This group has now had a copy of this file processed.
+                            $processedgroups[$filename][] = $groupid;
+                            $users = $assignment->get_submission_group_members($groupid, false,
+                                    $assignment->show_only_active_users());
+                        }
                     }
+                    foreach ($users as $user) {
+                        $grade = $assignment->get_user_grade($user->id, true);
 
-                    if ($oldfile = $fs->get_file($contextid,
-                                                 'assignfeedback_file',
-                                                 ASSIGNFEEDBACK_FILE_FILEAREA,
-                                                 $grade->id,
-                                                 $dirname,
-                                                 $basename)) {
-                        // Update existing feedback file.
-                        $oldfile->replace_file_with($unzippedfile);
-                        $feedbackfilesupdated++;
-                    } else {
-                        // Create a new feedback file.
-                        $newfilerecord = new stdClass();
-                        $newfilerecord->contextid = $contextid;
-                        $newfilerecord->component = 'assignfeedback_file';
-                        $newfilerecord->filearea = ASSIGNFEEDBACK_FILE_FILEAREA;
-                        $newfilerecord->filename = $basename;
-                        $newfilerecord->filepath = $dirnamewslash;
-                        $newfilerecord->itemid = $grade->id;
-                        $fs->create_file_from_storedfile($newfilerecord, $unzippedfile);
-                        $feedbackfilesadded++;
+                        // In 3.1 the default download structure of the submission files changed so that each student had their own
+                        // separate folder, the files were not renamed and the folder structure was kept. It is possible that
+                        // a user downloaded the submission files in 3.0 (or earlier) and edited the zip to add feedback or
+                        // changed the behavior back to the previous format, the following code means that we will still support the
+                        // old file structure. For more information please see - MDL-52489 / MDL-56022.
+                        $path = pathinfo($filename);
+                        if ($path['dirname'] == '.') { // Student submissions are not in separate folders.
+                            $basename = $filename;
+                            $dirname = "/";
+                            $dirnamewslash = "/";
+                        } else {
+                            $basename = $path['basename'];
+                            $dirname = $path['dirname'];
+                            $dirnamewslash = $dirname . "/";
+                        }
+
+                        if ($oldfile = $fs->get_file($contextid,
+                                                     'assignfeedback_file',
+                                                     ASSIGNFEEDBACK_FILE_FILEAREA,
+                                                     $grade->id,
+                                                     $dirname,
+                                                     $basename)) {
+                            // Update existing feedback file.
+                            $oldfile->replace_file_with($unzippedfile);
+                            $feedbackfilesupdated++;
+                        } else {
+                            // Create a new feedback file.
+                            $newfilerecord = new stdClass();
+                            $newfilerecord->contextid = $contextid;
+                            $newfilerecord->component = 'assignfeedback_file';
+                            $newfilerecord->filearea = ASSIGNFEEDBACK_FILE_FILEAREA;
+                            $newfilerecord->filename = $basename;
+                            $newfilerecord->filepath = $dirnamewslash;
+                            $newfilerecord->itemid = $grade->id;
+                            $fs->create_file_from_storedfile($newfilerecord, $unzippedfile);
+                            $feedbackfilesadded++;
+                        }
+                        $userswithnewfeedback[$user->id] = 1;
+
+                        // Update the number of feedback files for this user.
+                        $fileplugin->update_file_count($grade);
+
+                        // Update the last modified time on the grade which will trigger student notifications.
+                        $assignment->notify_grade_modified($grade);
                     }
-                    $userswithnewfeedback[$user->id] = 1;
-
-                    // Update the number of feedback files for this user.
-                    $fileplugin->update_file_count($grade);
-
-                    // Update the last modified time on the grade which will trigger student notifications.
-                    $assignment->notify_grade_modified($grade);
                 }
             }
         }

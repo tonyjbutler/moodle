@@ -51,6 +51,7 @@ class assignfeedback_file_import_zip_form extends moodleform implements renderab
         $assignment = $params['assignment'];
         $contextid = $assignment->get_context()->id;
         $importer = $params['importer'];
+        $applytoall = isset($params['applytoall']) ? $params['applytoall'] : false;
         $update = false;
 
         if (!$importer) {
@@ -121,6 +122,8 @@ class assignfeedback_file_import_zip_form extends moodleform implements renderab
         $mform->setType('action', PARAM_ALPHA);
         $mform->addElement('hidden', 'confirm', 'true');
         $mform->setType('confirm', PARAM_BOOL);
+        $mform->addElement('hidden', 'applytoall', $applytoall);
+        $mform->setType('applytoall', PARAM_BOOL);
         $mform->addElement('hidden', 'plugin', 'file');
         $mform->setTYpe('plugin', PARAM_PLUGIN);
         $mform->addElement('hidden', 'pluginsubtype', 'assignfeedback');

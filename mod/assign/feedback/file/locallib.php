@@ -619,7 +619,7 @@ class assign_feedback_file extends assign_feedback_plugin {
                 return;
             }
 
-            $o .= $importer->import_zip_files($this->assignment, $this);
+            $o .= $importer->import_zip_files($this->assignment, $this, $mform->get_data()->applytoall);
             $importer->delete_import_files($contextid);
         } else if (($data = $mform->get_data()) &&
                    ($zipfile = $mform->save_stored_file('feedbackzip',
@@ -633,7 +633,7 @@ class assign_feedback_file extends assign_feedback_plugin {
 
             $importer->extract_files_from_zip($zipfile, $contextid);
 
-            $params = array('assignment'=>$this->assignment, 'importer'=>$importer);
+            $params = array('assignment' => $this->assignment, 'importer' => $importer, 'applytoall' => $data->applytoall);
 
             $mform = new assignfeedback_file_import_zip_form(null, $params);
 
