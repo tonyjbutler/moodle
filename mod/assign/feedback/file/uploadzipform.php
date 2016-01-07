@@ -55,6 +55,16 @@ class assignfeedback_file_upload_zip_form extends moodleform {
         $mform->addRule('feedbackzip', get_string('uploadnofilefound'), 'required', null, 'client');
         $mform->addHelpButton('feedbackzip', 'feedbackzip', 'assignfeedback_file');
 
+        $assignment = new assign($params['context'], get_fast_modinfo($COURSE)->get_cm($params['cm']), $COURSE);
+        if ($assignment->get_instance()->teamsubmission) {
+            $mform->addElement('header', 'groupsubmissionsettings', get_string('groupsubmissionsettings', 'assign'));
+            $mform->addElement('selectyesno', 'applytoall', get_string('applytoteam', 'assignfeedback_file'));
+            $mform->setDefault('applytoall', 1);
+        } else {
+            $mform->addElement('hidden', 'applytoall', false);
+            $mform->setType('applytoall', PARAM_BOOL);
+        }
+
         $mform->addElement('hidden', 'id', $params['cm']);
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'action', 'viewpluginpage');

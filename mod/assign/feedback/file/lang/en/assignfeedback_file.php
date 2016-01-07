@@ -22,6 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['applytoteam'] = 'Apply same feedback to all members of group';
 $string['batchoperationconfirmuploadfiles'] = 'Upload one or more feedback files for all selected users?';
 $string['batchuploadfiles'] = 'Upload feedback files for multiple users';
 $string['batchuploadfilesforusers'] = 'Send feedback files to {$a} selected user(s).';
