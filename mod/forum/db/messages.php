@@ -34,4 +34,8 @@ $messageproviders = array (
     // Forum digest messages.
     'digests' => array(
     ),
+
+    // News forum posts.
+    'newsposts' => array(
+    ),
 );

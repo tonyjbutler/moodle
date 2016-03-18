@@ -361,6 +361,7 @@ $string['messageinboundforumhidden'] = 'Unable to post your reply, since the for
 $string['messageinboundnopostforum'] = 'Unable to post your reply, since you do not have permission to post in the {$a->forum->name} forum.';
 $string['messageinboundthresholdhit'] = 'Unable to post your reply.  You have exceeded the posting threshold set for this forum';
 $string['messageprovider:digests'] = 'Subscribed forum digests';
+$string['messageprovider:newsposts'] = 'News forum posts';
 $string['messageprovider:posts'] = 'Subscribed forum posts';
 $string['missingsearchterms'] = 'The following search terms occur only in the HTML markup of this message:';
 $string['modeflatnewestfirst'] = 'Display replies flat, with newest first';

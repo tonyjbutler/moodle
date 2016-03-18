@@ -321,7 +321,7 @@ class send_user_notifications extends \core\task\adhoc_task {
         $eventdata = new \core\message\message();
         $eventdata->courseid            = $course->id;
         $eventdata->component           = 'mod_forum';
-        $eventdata->name                = 'posts';
+        $eventdata->name                = ($forum->type == 'news') ? 'newsposts' : 'posts';
         $eventdata->userfrom            = $author;
         $eventdata->userto              = $this->recipient;
         $eventdata->subject             = $postsubject;
