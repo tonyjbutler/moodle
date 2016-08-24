@@ -49,6 +49,40 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
     }
 
     /**
+     * Get the default settings for editpdf feedback plugin
+     *
+     * @param MoodleQuickForm $mform The form to add elements to
+     * @return void
+     */
+    public function get_settings(MoodleQuickForm $mform) {
+        $name = get_string('commenttransparency', 'assignfeedback_editpdf');
+        $options = array();
+        for ($i = 0; $i <= 50; $i++) {
+            $options[] = $i . '%';
+        }
+        $default = $this->get_config('commenttransparency');
+        if ($default === false) {
+            $default = get_config('assignfeedback_editpdf', 'commenttransparency');
+        }
+
+        $select = $mform->addElement('select', 'assignfeedback_editpdf_commenttransparency', $name, $options);
+        $select->setSelected($default);
+        $mform->addHelpButton('assignfeedback_editpdf_commenttransparency', 'commenttransparency', 'assignfeedback_editpdf');
+    }
+
+    /**
+     * Save the settings for editpdf feedback plugin
+     *
+     * @param stdClass $data
+     * @return bool
+     */
+    public function save_settings(stdClass $data) {
+        $this->set_config('commenttransparency', $data->assignfeedback_editpdf_commenttransparency);
+
+        return true;
+    }
+
+    /**
      * Create a widget for rendering the editor.
      *
      * @param int $userid

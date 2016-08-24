@@ -38,6 +38,15 @@ $setting = new admin_setting_configstoredfile($name, $title, $description, 'stam
     array('maxfiles' => 8, 'accepted_types' => array('image')));
 $settings->add($setting);
 
+// Comment transparency default setting.
+$name = new lang_string('commenttransparency', 'assignfeedback_editpdf');
+$description = new lang_string('commenttransparencydesc', 'assignfeedback_editpdf');
+$options = array();
+for ($i = 0; $i <= 50; $i++) {
+    $options[] = $i . '%';
+}
+$settings->add(new admin_setting_configselect('assignfeedback_editpdf/commenttransparency', $name, $description, 0, $options));
+
 // Ghostscript setting.
 $systempathslink = new moodle_url('/admin/settings.php', array('section' => 'systempaths'));
 $systempathlink = html_writer::link($systempathslink, get_string('systempaths', 'admin'));
