@@ -1673,6 +1673,10 @@ Y.extend(EDITOR, Y.Base, EDITOR.prototype, {
         stampfiles: {
             validator: Y.Lang.isArray,
             value: ''
+        },
+        commenttransparency: {
+            validator: Y.Lang.isInteger,
+            value: 0
         }
     }
 });

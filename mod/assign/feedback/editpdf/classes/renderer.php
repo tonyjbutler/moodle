@@ -249,6 +249,7 @@ class assignfeedback_editpdf_renderer extends plugin_renderer_base {
                 'attemptnumber' => $widget->attemptnumber,
                 'stampfiles' => $widget->stampfiles,
                 'readonly' => $widget->readonly,
+                'commenttransparency' => $widget->commenttransparency
             )
         );
 

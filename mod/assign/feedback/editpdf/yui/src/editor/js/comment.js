@@ -202,6 +202,12 @@ var COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             backgroundColor: COMMENTCOLOUR[this.colour],
             color: COMMENTTEXTCOLOUR
         });
+        node.transparency = this.editor.get('commenttransparency');
+        if (node.transparency > 0 && this.colour !== 'clear') {
+            node.opacity = 1 - (node.transparency / 100);
+            node.background = COMMENTCOLOUR[this.colour].replace('rgb', 'rgba').replace(')', ', ' + node.opacity + ')');
+            node.setStyle('backgroundColor', node.background);
+        }
 
         drawingcanvas.append(container);
         container.setStyle('position', 'absolute');

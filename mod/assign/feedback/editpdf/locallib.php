@@ -174,7 +174,8 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                                                     $url,
                                                     $filename,
                                                     $stampfiles,
-                                                    $readonly
+                                                    $readonly,
+                                                    $this->get_config('commenttransparency')
                                                 );
         return $widget;
     }
