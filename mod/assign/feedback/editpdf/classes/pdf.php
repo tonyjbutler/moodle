@@ -341,9 +341,10 @@ class pdf extends \FPDI {
      * @param int $y the y-coordinate of the comment (in pixels)
      * @param int $width the width of the comment (in pixels)
      * @param string $colour optional the background colour of the comment (red, yellow, green, blue, white, clear)
+     * @param int $transparency Transparency of comments
      * @return bool true if successful (always)
      */
-    public function add_comment($text, $x, $y, $width, $colour = 'yellow') {
+    public function add_comment($text, $x, $y, $width, $colour = 'yellow', $transparency = 0) {
         if (!$this->filename) {
             return false;
         }
@@ -377,7 +378,15 @@ class pdf extends \FPDI {
         if ($colour != 'clear') {
             $newy = $this->GetY();
             // Now we know the final size of the comment, draw a rectangle with the background colour.
-            $this->Rect($x, $y, $width, $newy - $y, 'DF');
+            if (!empty($transparency)) {
+                // Make background partially transparent.
+                $this->SetAlpha(1 - ($transparency / 100));
+                $this->Rect($x, $y, $width, $newy - $y, 'DF');
+                // Then revert to full opacity for text.
+                $this->SetAlpha(1);
+            } else {
+                $this->Rect($x, $y, $width, $newy - $y, 'DF');
+            }
             // Re-draw the text over the top of the background rectangle.
             $this->MultiCell($width, 1.0, $text, 0, 'L', 0, 4, $x, $y); /* width, height, text, border, justify, fill, ln, x, y */
         }
