@@ -366,7 +366,8 @@ class gradingform_rubric_controller extends gradingform_controller {
             'showscoreteacher' => 1,
             'showscorestudent' => 1,
             'enableremarks' => 1,
-            'showremarksstudent' => 1
+            'showremarksstudent' => 1,
+            'allowgradeoverride' => 0
         );
         return $options;
     }
