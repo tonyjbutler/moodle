@@ -7584,6 +7584,41 @@ class assign {
             } else {
                 $mform->addElement('hidden', 'advancedgradinginstanceid', $gradinginstance->get_id());
                 $mform->setType('advancedgradinginstanceid', PARAM_INT);
+                // Allow calculated grade to be manually overridden if required.
+                if (!empty($gradinginstance->get_controller()->get_options()['allowgradeoverride'])) {
+                    $gradingmanager = get_grading_manager($this->context, 'mod_assign', 'submissions');
+                    $gradingmethod = $gradingmanager->get_active_method();
+                    $strcalculatedgrade = get_string('calculatedgrade' . $gradingmethod, 'assign');
+                    if ($gradinginstance->validate_grading_element($gradinginstance->get_rubric_filling())) {
+                        $data->calculatedgrade = format_float($gradinginstance->get_grade(),
+                                $this->get_grade_item()->get_decimals());
+                    }
+                    if ($this->get_instance()->grade > 0) {
+                        $calculatedgrade = $mform->addElement('text', 'calculatedgrade', $strcalculatedgrade);
+                        $mform->addHelpButton('calculatedgrade', 'calculatedgrade' . $gradingmethod, 'assign');
+                        $mform->setType('calculatedgrade', PARAM_RAW);
+                        $name = get_string('gradeoutof', 'assign', $this->get_instance()->grade);
+                        $mform->addElement('text', 'grade', $name);
+                        $mform->addHelpButton('grade', 'gradeoutofhelp', 'assign');
+                        $mform->setType('grade', PARAM_RAW);
+                    } else {
+                        $grademenu = array(-1 => get_string("nograde")) + make_grades_menu($this->get_instance()->grade);
+                        if (count($grademenu) > 1) {
+                            $calculatedgrade = $mform->addElement('select', 'calculatedgrade', $strcalculatedgrade, $grademenu);
+                            $mform->addHelpButton('calculatedgrade', 'calculatedgrade' . $gradingmethod, 'assign');
+                            if (!empty($data->calculatedgrade)) {
+                                $data->calculatedgrade = (int)unformat_float($data->calculatedgrade);
+                            }
+                            $mform->setType('calculatedgrade', PARAM_INT);
+                            $mform->addElement('select', 'grade', get_string('grade') . ':', $grademenu);
+                            if (!empty($data->grade)) {
+                                $data->grade = (int)unformat_float($data->grade);
+                            }
+                            $mform->setType('grade', PARAM_INT);
+                        }
+                    }
+                    $calculatedgrade->freeze();
+                }
             }
         } else {
             // Use simple direct grading.
@@ -8280,6 +8315,19 @@ class assign {
             if ($gradinginstance) {
                 $grade->grade = $gradinginstance->submit_and_get_grade($formdata->advancedgrading,
                                                                        $grade->id);
+                // Allow calculated grade to be manually overridden if required.
+                if (!empty($gradinginstance->get_controller()->get_options()['allowgradeoverride'])) {
+                    $decimalpoints = $this->get_grade_item()->get_decimals();
+                    $nullgrade = $grade->grade == -1;
+                    $gradeupdated = !$nullgrade && format_float($grade->grade, $decimalpoints) != $formdata->calculatedgrade;
+                    $nulloverride = empty($formdata->grade) || $formdata->grade == -1;
+                    $zerooverride = isset($formdata->grade) && is_numeric($formdata->grade) && $formdata->grade == 0;
+                    $overrideset = (!$nulloverride && $formdata->grade != format_float($grade->grade, $decimalpoints));
+                    $overrideupdated = $overrideset && $formdata->grade != format_float($originalgrade, $decimalpoints);
+                    if (($overrideset || $zerooverride) && !($gradeupdated && !$overrideupdated)) {
+                        $grade->grade = grade_floatval(unformat_float($formdata->grade));
+                    }
+                }
             } else {
                 // Handle the case when grade is set to No Grade.
                 if (isset($formdata->grade)) {

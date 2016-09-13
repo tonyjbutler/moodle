@@ -734,23 +734,27 @@
 
 /***** Start grade *****/
 
-.path-mod-assign [data-region="grade-panel"] .mform #fitem_id_grade.fitem {
+.path-mod-assign [data-region="grade-panel"] .mform #fitem_id_grade.fitem,
+.path-mod-assign [data-region="grade-panel"] .mform #fitem_id_calculatedgrade.fitem {
     padding-top: 5px;
 }
 
-.path-mod-assign #page-content [data-region="grade-panel"] .mform:not(.unresponsive) #fitem_id_grade.fitem .fitemtitle {
+.path-mod-assign #page-content [data-region="grade-panel"] .mform:not(.unresponsive) #fitem_id_grade.fitem .fitemtitle,
+.path-mod-assign #page-content [data-region="grade-panel"] .mform:not(.unresponsive) #fitem_id_calculatedgrade.fitem .fitemtitle {
     display: inline-block;
     width: auto;
     border-bottom: none;
     box-shadow: none;
 }
 
-.path-mod-assign #page-content [data-region="grade-panel"] .mform:not(.unresponsive) #fitem_id_grade.fitem .felement {
+.path-mod-assign #page-content [data-region="grade-panel"] .mform:not(.unresponsive) #fitem_id_grade.fitem .felement,
+.path-mod-assign #page-content [data-region="grade-panel"] .mform:not(.unresponsive) #fitem_id_calculatedgrade.fitem .felement {
     width: auto;
     float: right;
 }
 
-.path-mod-assign #page-content .mform:not(.unresponsive) #fitem_id_grade.fitem .felement input {
+.path-mod-assign #page-content .mform:not(.unresponsive) #fitem_id_grade.fitem .felement input,
+.path-mod-assign #page-content .mform:not(.unresponsive) #fitem_id_calculatedgrade.fitem .felement input {
     width: 80px;
     margin-bottom: 0;
 }
