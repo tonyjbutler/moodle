@@ -269,8 +269,55 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
         $scale = (isset($vals['modgrade_scale'])) ? $vals['modgrade_scale'] : null;
         $rescalegrades = (isset($vals['modgrade_rescalegrades'])) ? $vals['modgrade_rescalegrades'] : null;
 
+        // Perform ratings postprocessing if chosen UI type is button.
+        if (isset($submitvalues['assessui']) && $submitvalues['assessui'] == RATING_UI_BUTTON) {
+            // Set aggregation method to 'count'.
+            $submitvalues['assessed'] = RATING_AGGREGATE_COUNT;
+
+            // Set a single-item scale based on custom button text.
+            $type = 'scale';
+            // Use a sensible default if no button text is specified.
+            if (!$buttontext = trim($submitvalues['buttontext'])) {
+                $buttontext = get_string('useful', 'rating');
+            }
+            $scale = $this->get_button_scale($buttontext);
+        }
+
         $return = $this->process_value($type, $scale, $point, $rescalegrades);
         return array($this->getName() => $return, $this->getName() . '_rescalegrades' => $rescalegrades);
+    }
+
+    /**
+     * Get a single-item scale for use with ratings button user interface.
+     *
+     * @param string $buttontext Custom text to display on button.
+     * @return int ID of scale to use.
+     */
+    private function get_button_scale($buttontext) {
+        global $COURSE, $USER;
+
+        // Check whether an appropriate scale already exists.
+        if (!$globalscales = grade_scale::fetch_all_global()) {
+            $globalscales = array();
+        }
+        if (!$localscales = grade_scale::fetch_all_local($COURSE->id)) {
+            $localscales = array();
+        }
+        $scales = array_merge($globalscales, $localscales);
+        foreach ($scales as $scale) {
+            if ($scale->scale == ucfirst(strtolower($buttontext))) {
+                return $scale->id;
+            }
+        }
+
+        // If nothing is found, create a scale to use.
+        $scale = new grade_scale();
+        $scale->courseid = $COURSE->id;
+        $scale->userid = $USER->id;
+        $scale->name = ucfirst(strtolower($buttontext));
+        $scale->scale = $scale->name;
+        $scale->description = get_string('scaledesc', 'rating', $scale->name);
+        return $scale->insert();
     }
 
     /**

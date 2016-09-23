@@ -2230,33 +2230,51 @@ class core_renderer extends renderer_base {
         // Initialise the JavaScript so ratings can be done by AJAX.
         $ratingmanager->initialise_rating_javascript($this->page);
 
-        $strrate = get_string("rate", "rating");
         $ratinghtml = ''; //the string we'll return
 
         // permissions check - can they view the aggregate?
         if ($rating->user_can_view_aggregate()) {
 
-            $aggregatelabel = $ratingmanager->get_aggregate_label($rating->settings->aggregationmethod);
-            $aggregatestr   = $rating->get_aggregate_string();
+            $aggregationmethod = $rating->settings->aggregationmethod;
+            if ($rating->settings->ui != RATING_UI_BUTTON) {
+                $aggregatelabel = $ratingmanager->get_aggregate_label($aggregationmethod);
+            }
 
-            $aggregatehtml  = html_writer::tag('span', $aggregatestr, array('id' => 'ratingaggregate'.$rating->itemid, 'class' => 'ratingaggregate')).' ';
+            $aggregatestr = $rating->get_aggregate_string();
+
+            $aggregatehtml = html_writer::tag('span', $aggregatestr, array('id' => 'ratingaggregate' . $rating->itemid,
+                    'class' => 'ratingaggregate')) . ' ';
             if ($rating->count > 0) {
-                $countstr = "({$rating->count})";
+                if ($rating->settings->ui == RATING_UI_BUTTON) {
+                    $countstr = $rating->count;
+                } else {
+                    $countstr = "({$rating->count})";
+                }
             } else {
                 $countstr = '-';
             }
-            $aggregatehtml .= html_writer::tag('span', $countstr, array('id'=>"ratingcount{$rating->itemid}", 'class' => 'ratingcount')).' ';
+            $aggregatehtml .= html_writer::tag('span', $countstr, array('id' => 'ratingcount' . $rating->itemid,
+                    'class' => 'ratingcount')) . ' ';
+            if ($rating->settings->ui == RATING_UI_BUTTON) {
+                $buttontext = $rating->settings->scale->scaleitems[1];
+                $aggregatehtml = get_string('aggregatecountbutton', 'rating',
+                        array('count' => $aggregatehtml, 'rating' => $buttontext));
+            }
 
-            $ratinghtml .= html_writer::tag('span', $aggregatelabel, array('class'=>'rating-aggregate-label'));
-            if ($rating->settings->permissions->viewall && $rating->settings->pluginpermissions->viewall) {
+            if (isset($aggregatelabel)) {
+                $ratinghtml .= html_writer::tag('span', $aggregatelabel, array('class' => 'rating-aggregate-label'));
+            }
+            if ($aggregatehtml) {
+                if ($rating->settings->permissions->viewall && $rating->settings->pluginpermissions->viewall) {
 
-                $nonpopuplink = $rating->get_view_ratings_url();
-                $popuplink = $rating->get_view_ratings_url(true);
+                    $nonpopuplink = $rating->get_view_ratings_url();
+                    $popuplink = $rating->get_view_ratings_url(true);
 
-                $action = new popup_action('click', $popuplink, 'ratings', array('height' => 400, 'width' => 600));
-                $ratinghtml .= $this->action_link($nonpopuplink, $aggregatehtml, $action);
-            } else {
-                $ratinghtml .= $aggregatehtml;
+                    $action = new popup_action('click', $popuplink, 'ratings', array('height' => 400, 'width' => 600));
+                    $ratinghtml .= $this->action_link($nonpopuplink, $aggregatehtml, $action);
+                } else {
+                    $ratinghtml .= $aggregatehtml;
+                }
             }
         }
 
@@ -2284,23 +2302,65 @@ class core_renderer extends renderer_base {
                 $formstart .= html_writer::empty_tag('input', $attributes);
             }
 
-            if (empty($ratinghtml)) {
-                $ratinghtml .= $strrate.': ';
+            if (empty($ratinghtml) && $rating->settings->ui != RATING_UI_BUTTON) {
+                $ratinghtml .= get_string('ratecolon', 'rating');
             }
             $ratinghtml = $formstart.$ratinghtml;
 
-            $scalearray = array(RATING_UNSET_RATING => $strrate.'...') + $rating->settings->scale->scaleitems;
-            $scaleattrs = array('class'=>'postratingmenu ratinginput','id'=>'menurating'.$rating->itemid);
-            $ratinghtml .= html_writer::label($rating->rating, 'menurating'.$rating->itemid, false, array('class' => 'accesshide'));
-            $ratinghtml .= html_writer::select($scalearray, 'rating', $rating->rating, false, $scaleattrs);
+            if ($rating->settings->ui == RATING_UI_BUTTON) {
+                $buttontext = $rating->settings->scale->scaleitems[1];
+                switch ($rating->settings->buttonicon) {
+                    case RATING_BUTTONICON_MOODLE:
+                        $buttonicon = ' moodleicon';
+                        break;
+                    case RATING_BUTTONICON_THUMBSUP:
+                        $buttonicon = ' thumbsupicon';
+                        break;
+                    case RATING_BUTTONICON_PLUSONE:
+                        $buttonicon = ' plusoneicon';
+                        break;
+                    case RATING_BUTTONICON_APPROVE:
+                        $buttonicon = ' approveicon';
+                        break;
+                    case RATING_BUTTONICON_STAR:
+                        $buttonicon = ' staricon';
+                        break;
+                    default:
+                        $buttonicon = ' moodleicon';
+                }
+                // Output toggle button.
+                $ratinghtml .= html_writer::start_tag('span', array('class' => 'togglesubmit'));
+                if ($rating->rating == null) {
+                    $buttonvalue = 1;
+                    $buttonclass = $buttonicon . ' dimmed_text';
+                    $buttontitle = get_string('toggleratingon', 'rating', $buttontext);
+                } else {
+                    $buttonvalue = RATING_UNSET_RATING;
+                    $buttonclass = $buttonicon . ' toggledon';
+                    $buttontitle = get_string('toggleratingoff', 'rating', $buttontext);
+                }
+                $buttonattrs = array('type' => 'hidden', 'class' => 'ratinginput', 'name' => 'rating',
+                        'id' => 'togglebuttoninput' . $rating->itemid, 'value' => $buttonvalue);
+                $ratinghtml .= html_writer::empty_tag('input', $buttonattrs);
+                $attributes = array('type' => 'submit', 'class' => 'togglebutton' . $buttonclass,
+                        'id' => 'togglebuttonsubmit' . $rating->itemid, 'value' => $buttontext, 'title' => $buttontitle);
+            } else {
+                $scalearray = array(RATING_UNSET_RATING => get_string('rateellipsis', 'rating')) +
+                        $rating->settings->scale->scaleitems;
+                $scaleattrs = array('class' => 'postratingmenu ratinginput', 'id' => 'menurating' . $rating->itemid);
+                $ratinghtml .= html_writer::label($rating->rating, 'menurating' . $rating->itemid, false,
+                        array('class' => 'accesshide'));
+                $ratinghtml .= html_writer::select($scalearray, 'rating', $rating->rating, false, $scaleattrs);
 
-            //output submit button
-            $ratinghtml .= html_writer::start_tag('span', array('class'=>"ratingsubmit"));
+                // Output 'submit' button.
+                $ratinghtml .= html_writer::start_tag('span', array('class' => 'ratingsubmit'));
 
-            $attributes = array('type' => 'submit', 'class' => 'postratingmenusubmit', 'id' => 'postratingsubmit'.$rating->itemid, 'value' => s(get_string('rate', 'rating')));
+                $attributes = array('type' => 'submit', 'class' => 'postratingmenusubmit',
+                        'id' => 'postratingsubmit' . $rating->itemid, 'value' => get_string('rate', 'rating'));
+            }
             $ratinghtml .= html_writer::empty_tag('input', $attributes);
 
-            if (!$rating->settings->scale->isnumeric) {
+            if (!$rating->settings->scale->isnumeric && $rating->settings->ui != RATING_UI_BUTTON) {
                 // If a global scale, try to find current course ID from the context
                 if (empty($rating->settings->scale->courseid) and $coursecontext = $rating->context->get_course_context(false)) {
                     $courseid = $coursecontext->instanceid;

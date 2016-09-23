@@ -1,0 +1,79 @@
+/* rating.scss */
+
+.ratingform {
+    // Remove left margin if rating count is not displayed.
+    input.ratinginput + span.togglesubmit input.togglebutton {
+        margin-left: 0;
+    }
+    input {
+        &.togglebutton {
+            .btn;
+            padding: 4px 8px 4px 30px;
+            background-size: 16px 16px, auto;
+            color: $grayLight;
+            &:hover,
+            &:focus {
+                color: $grayLight;
+            }
+        }
+        &.toggledon {
+            color: $grayDark;
+            &:hover,
+            &:focus {
+                color: $grayDark;
+            }
+        }
+        &.moodleicon {
+            padding-left: 32px;
+            background-size: 18px 18px, auto;
+            .toggleBackground(url([[pix:i/moodle-mono]]));
+            &.toggledon {
+                .toggleBackground(url([[pix:i/moodle]]));
+            }
+        }
+        &.thumbsupicon {
+            .toggleBackground(url([[pix:i/thumb-mono]]));
+            &.toggledon {
+                .toggleBackground(url([[pix:i/thumb]]));
+            }
+        }
+        &.plusoneicon {
+            .toggleBackground(url([[pix:i/plus-mono]]));
+            &.toggledon {
+                .toggleBackground(url([[pix:i/plus]]));
+            }
+        }
+        &.approveicon {
+            .toggleBackground(url([[pix:i/check-mono]]));
+            &.toggledon {
+                .toggleBackground(url([[pix:i/check]]));
+            }
+        }
+        &.staricon {
+            .toggleBackground(url([[pix:i/star-mono]]));
+            &.toggledon {
+                .toggleBackground(url([[pix:i/star]]));
+            }
+        }
+    }
+}
+
+// Background overrides.
+.toggleBackground($toggleIcon, $startColor: $btnBackground, $endColor: $btnBackgroundHighlight) {
+    background-image: $toggleIcon, none; // No gradient for IE9.
+    background-image: $toggleIcon, -moz-linear-gradient(top, $startColor, $endColor);
+    background-image: $toggleIcon, -webkit-gradient(linear, 0 0, 0 100%, from($startColor), to($endColor));
+    background-image: $toggleIcon, -webkit-linear-gradient(top, $startColor, $endColor);
+    background-image: $toggleIcon, -o-linear-gradient(top, $startColor, $endColor);
+    background-image: $toggleIcon, linear-gradient(to bottom, $startColor, $endColor);
+    background-repeat: no-repeat, repeat-x;
+    background-position: 8px 50%, 0 0;
+    &:hover,
+    &:focus {
+        background-position: 8px 50%, 0 -15px;
+    }
+    &.active,
+    &:active {
+        background-image: $toggleIcon, none;
+    }
+}

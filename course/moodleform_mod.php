@@ -203,6 +203,15 @@ abstract class moodleform_mod extends moodleform {
             $default_values['ratingtime']=
                 ($default_values['assesstimestart'] && $default_values['assesstimefinish']) ? 1 : 0;
         }
+
+        if ($this->_features->rating && !empty($default_values['assessui'])) {
+            if ($default_values['assessui'] == RATING_UI_BUTTON) {
+                if (($scaleid = $default_values['scale']) < 0) {
+                    $scale = grade_scale::fetch(array('id' => abs($scaleid)));
+                    $default_values['buttontext'] = $scale->scale;
+                }
+            }
+        }
     }
 
     /**
@@ -522,7 +531,27 @@ abstract class moodleform_mod extends moodleform {
             $mform->addElement('static', 'rolewarning', get_string('rolewarning','rating'), $rolenamestring);
             $mform->addHelpButton('rolewarning', 'rolewarning', 'rating');
 
+            $mform->addElement('select', 'assessui', get_string('ui', 'rating') , $rm->get_ui_types());
+            $mform->setDefault('assessui', 0);
+            $mform->addHelpButton('assessui', 'ui', 'rating');
+
+            $mform->addElement('text', 'buttontext', get_string('buttontext', 'rating'));
+            $mform->setType('buttontext', PARAM_TEXT);
+            $mform->disabledIf('buttontext', 'assessui', 'neq', 1);
+            $mform->addHelpButton('buttontext', 'buttontext', 'rating');
+
+            $iconarray = array();
+            $icons = $rm->get_button_icons();
+            foreach ($icons as $icon => $value) {
+                $iconarray[] =& $mform->createElement('radio', 'assessicon', '', $icon, $value);
+            }
+            $mform->addGroup($iconarray, 'buttonicon', get_string('buttonicon', 'rating'), array(' '), false);
+            $mform->disabledIf('buttonicon', 'assessui', 'neq', 1);
+            $mform->setDefault('buttonicon', 0);
+            $mform->addHelpButton('buttonicon', 'buttonicon', 'rating');
+
             $mform->addElement('select', 'assessed', get_string('aggregatetype', 'rating') , $rm->get_aggregate_types());
+            $mform->disabledIf('assessed', 'assessui', 'neq', 0);
             $mform->setDefault('assessed', 0);
             $mform->addHelpButton('assessed', 'aggregatetype', 'rating');
 
@@ -546,6 +575,7 @@ abstract class moodleform_mod extends moodleform {
             }
             $mform->addElement('modgrade', 'scale', get_string('scale'), $gradeoptions);
             $mform->hideIf('scale', 'assessed', 'eq', 0);
+            $mform->disabledIf('scale', 'assessui', 'neq', 0);
             $mform->addHelpButton('scale', 'modgrade', 'grades');
             $mform->setDefault('scale', $CFG->gradepointdefault);
 

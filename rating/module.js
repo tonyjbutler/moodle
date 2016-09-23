@@ -5,18 +5,18 @@ M.core_rating = {
 
     init : function(Y){
         this.Y = Y;
-        Y.all('select.postratingmenu').each(this.attach_rating_events, this);
+        Y.delegate('change', this.submit_rating, Y.config.doc.body, 'select.postratingmenu', this);
+        Y.delegate('click', this.submit_rating, Y.config.doc.body, 'input.togglebutton', this);
 
-        //hide the submit buttons
+        // Hide the rating submit buttons.
         this.Y.all('input.postratingmenusubmit').setStyle('display', 'none');
+
+        // Make the toggle submit buttons inactive.
+        this.Y.all('input.togglebutton').setAttribute('type', 'button');
     },
 
-    attach_rating_events : function(selectnode) {
-        selectnode.on('change', this.submit_rating, this, selectnode);
-    },
-
-    submit_rating : function(e, selectnode){
-        var theinputs = selectnode.ancestor('form').all('.ratinginput');
+    submit_rating: function(e) {
+        var theinputs = e.target.ancestor('form').all('.ratinginput');
         var thedata = [];
 
         var inputssize = theinputs.size();
@@ -26,10 +26,18 @@ M.core_rating = {
             }
         }
 
+        // Add a JavaScript loading icon.
+        var spinner = M.util.add_spinner(Y, e.target.ancestor('div'));
+        spinner.removeClass('iconsmall');
+
         var scope = this;
         var cfg = {
             method: 'POST',
             on: {
+                start: function() {
+                    // Display the JS loading icon.
+                    spinner.show();
+                },
                 complete : function(tid, outcome, args) {
                     try {
                         if (!outcome) {
@@ -39,19 +47,52 @@ M.core_rating = {
 
                         var data = scope.Y.JSON.parse(outcome.responseText);
                         if (data.success){
-                            //if the user has access to the aggregate then update it
-                            if (data.itemid) { //do not test data.aggregate or data.count otherwise it doesn't refresh value=0 or no value
+                            if (data.itemid) {
                                 var itemid = data.itemid;
 
-                                var node = scope.Y.one('#ratingaggregate' + itemid);
-                                node.set('innerHTML',data.aggregate);
+                                if (data.ui === 'button') {
+                                    // Update the number of ratings.
+                                    if (data.hasOwnProperty('count')) {
+                                        var countnode = scope.Y.one('#ratingcount' + itemid);
+                                        if (data.count > 0) {
+                                            countnode.set('innerHTML', data.count);
+                                        } else {
+                                            countnode.set('innerHTML', '-');
+                                        }
+                                    }
 
-                                // Empty the count value if no ratings.
-                                var node = scope.Y.one('#ratingcount' + itemid);
-                                if (data.count > 0) {
-                                    node.set('innerHTML', "(" + data.count + ")");
+                                    // Update toggle button value and class.
+                                    var inputnode = scope.Y.one('#togglebuttoninput' + itemid);
+                                    var value = inputnode.get('value');
+                                    var submitnode = scope.Y.one('#togglebuttonsubmit' + itemid);
+                                    switch(value) {
+                                        case '-999':
+                                            inputnode.set('value', 1);
+                                            submitnode.removeClass('toggledon');
+                                            submitnode.addClass('dimmed_text');
+                                            submitnode.setAttribute('title', data.strtoggleon);
+                                            break;
+                                        default:
+                                            inputnode.set('value', -999);
+                                            submitnode.addClass('toggledon');
+                                            submitnode.removeClass('dimmed_text');
+                                            submitnode.setAttribute('title', data.strtoggleoff);
+                                            break;
+                                    }
                                 } else {
-                                    node.set('innerHTML', "");
+                                    // If the user has access to the aggregate then update it.
+                                    if (data.hasOwnProperty('aggregate')) {
+                                        var aggregatenode = scope.Y.one('#ratingaggregate' + itemid);
+                                        aggregatenode.set('innerHTML', data.aggregate);
+
+                                        // Empty the count value if no ratings.
+                                        var countnode = scope.Y.one('#ratingcount' + itemid);
+                                        if (data.count > 0) {
+                                            countnode.set('innerHTML', "(" + data.count + ")");
+                                        } else {
+                                            countnode.set('innerHTML', "");
+                                        }
+                                    }
                                 }
                             }
                             return true;
@@ -63,6 +104,10 @@ M.core_rating = {
                         alert(e.message + " " + outcome.responseText);
                     }
                     return false;
+                },
+                end: function() {
+                    // Hide the JS loading icon.
+                    spinner.hide();
                 }
             },
             arguments: {

@@ -271,6 +271,16 @@ class core_rating_testcase extends advanced_testcase {
         $this->assertNull($result[0]->rating->userid);
         $this->assertNull($result[0]->rating->rating);
         $this->assertEquals($result[0]->rating->aggregate, 3); // Should still get the aggregate.
+
+        // Each post received 2 ratings, so using the 'Number of likes'
+        // aggregation method they should have 2 likes each.
+        $posts = array_merge($user1posts, $user2posts, $user3posts);
+        $toptions = (object)array_merge($defaultoptions, array('items' => $posts,
+            'aggregate' => RATING_AGGREGATE_LIKE));
+        $result = $rm->get_ratings($toptions);
+        $this->assertEquals($result[0]->rating->aggregate, 2);
+        $this->assertEquals($result[1]->rating->aggregate, 2);
+        $this->assertEquals($result[2]->rating->aggregate, 2);
     }
 
     /**

@@ -25,6 +25,9 @@
 
 define('RATING_UNSET_RATING', -999);
 
+define('RATING_UI_SELECT', 0);
+define('RATING_UI_BUTTON', 1);
+
 define ('RATING_AGGREGATE_NONE', 0); // No ratings.
 define ('RATING_AGGREGATE_AVERAGE', 1);
 define ('RATING_AGGREGATE_COUNT', 2);
@@ -33,6 +36,12 @@ define ('RATING_AGGREGATE_MINIMUM', 4);
 define ('RATING_AGGREGATE_SUM', 5);
 
 define ('RATING_DEFAULT_SCALE', 5);
+
+define('RATING_BUTTONICON_MOODLE', 0);
+define('RATING_BUTTONICON_THUMBSUP', 1);
+define('RATING_BUTTONICON_PLUSONE', 2);
+define('RATING_BUTTONICON_APPROVE', 3);
+define('RATING_BUTTONICON_STAR', 4);
 
 /**
  * The rating class represents a single rating by a single user
@@ -350,6 +359,8 @@ class rating implements renderable {
             'scaleid'     => $this->settings->scale->id,
             'returnurl'   => $returnurl,
             'rateduserid' => $this->itemuserid,
+            'ui'          => $this->settings->ui,
+            'buttonicon'  => $this->settings->buttonicon,
             'aggregation' => $this->settings->aggregationmethod,
             'sesskey'     => sesskey()
         );
@@ -627,6 +638,8 @@ class rating_manager {
      *      ratingarea        => string The ratingarea the items belong to [required]
      *      aggregate         => int Aggregation method to apply. RATING_AGGREGATE_AVERAGE, RATING_AGGREGATE_MAXIMUM etc [required]
      *      scaleid           => int the scale from which the user can select a rating [required]
+     *      ui                => int The user interface to display (RATING_UI_SELECT or RATING_UI_BUTTON). [optional]
+     *      buttonicon        => int The button icon to display if ui is RATING_UI_BUTTON. [optional]
      *      returnurl         => string the url to return the user to after submitting a rating. Null for ajax requests [optional]
      *      assesstimestart   => int only allow rating of items created after this timestamp [optional]
      *      assesstimefinish  => int only allow rating of items created before this timestamp [optional]
@@ -656,11 +669,19 @@ class rating_manager {
         // Settings that are common to all ratings objects in this context.
         $settings = new stdClass;
         $settings->scale             = $this->generate_rating_scale_object($options->scaleid); // The scale to use now.
+        $settings->ui                = null;
+        $settings->buttonicon        = null;
         $settings->aggregationmethod = $options->aggregate;
         $settings->assesstimestart   = null;
         $settings->assesstimefinish  = null;
 
         // Collect options into the settings object.
+        if (!empty($options->ui)) {
+            $settings->ui = $options->ui;
+        }
+        if (!empty($options->buttonicon)) {
+            $settings->buttonicon = $options->buttonicon;
+        }
         if (!empty($options->assesstimestart)) {
             $settings->assesstimestart = $options->assesstimestart;
         }
@@ -882,6 +903,16 @@ class rating_manager {
     }
 
     /**
+     * Returns array of user interface types for ratings.
+     *
+     * @return array UI types
+     */
+    public function get_ui_types() {
+        return array (RATING_UI_SELECT => get_string('uiselect', 'rating'),
+                      RATING_UI_BUTTON => get_string('uibutton', 'rating'));
+    }
+
+    /**
      * Returns array of aggregate types. Used by ratings.
      *
      * @return array aggregate types
@@ -893,6 +924,32 @@ class rating_manager {
                       RATING_AGGREGATE_MAXIMUM  => get_string('aggregatemax', 'rating'),
                       RATING_AGGREGATE_MINIMUM  => get_string('aggregatemin', 'rating'),
                       RATING_AGGREGATE_SUM      => get_string('aggregatesum', 'rating'));
+    }
+
+    /**
+     * Returns array of button icon names. Used by ratings.
+     *
+     * @return array Button icon names
+     */
+    public function get_button_icons() {
+        global $OUTPUT;
+
+        $moodle = html_writer::empty_tag('img',
+                array('src' => $OUTPUT->image_url('i/moodle'), 'alt' => get_string('moodleicon', 'rating')));
+        $thumbsup = html_writer::empty_tag('img',
+                array('src' => $OUTPUT->image_url('i/thumb'), 'alt' => get_string('thumbsup', 'rating')));
+        $plusone = html_writer::empty_tag('img',
+                array('src' => $OUTPUT->image_url('i/plus'), 'alt' => get_string('plusone', 'rating')));
+        $approve = html_writer::empty_tag('img',
+                array('src' => $OUTPUT->image_url('i/check'), 'alt' => get_string('approve', 'rating')));
+        $star = html_writer::empty_tag('img',
+                array('src' => $OUTPUT->image_url('i/star'), 'alt' => get_string('star', 'rating')));
+
+        return array ($moodle   => RATING_BUTTONICON_MOODLE,
+                      $thumbsup => RATING_BUTTONICON_THUMBSUP,
+                      $plusone  => RATING_BUTTONICON_PLUSONE,
+                      $approve  => RATING_BUTTONICON_APPROVE,
+                      $star     => RATING_BUTTONICON_STAR);
     }
 
     /**
@@ -1062,10 +1119,11 @@ class rating_manager {
      * @param int $scaleid the scale id
      * @param int $userrating the user rating
      * @param int $rateduserid the rated user id
+     * @param int $ui the user interface type
      * @param int $aggregationmethod the aggregation method
      * @since Moodle 3.2
      */
-    public function add_rating($cm, $context, $component, $ratingarea, $itemid, $scaleid, $userrating, $rateduserid,
+    public function add_rating($cm, $context, $component, $ratingarea, $itemid, $scaleid, $userrating, $rateduserid, $ui,
                                 $aggregationmethod) {
         global $CFG, $DB, $USER;
 
@@ -1086,6 +1144,7 @@ class rating_manager {
                 'scaleid'     => $scaleid,
                 'rating'      => $userrating,
                 'rateduserid' => $rateduserid,
+                'ui'          => $ui,
                 'aggregation' => $aggregationmethod
             );
             if (!$this->check_rating_is_valid($params)) {
@@ -1141,6 +1200,7 @@ class rating_manager {
 
         // Most of $ratingoptions variables were previously set.
         $ratingoptions->items = array($item);
+        $ratingoptions->ui = $ui;
         $ratingoptions->aggregate = $aggregationmethod;
 
         $items = $this->get_ratings($ratingoptions);
@@ -1154,8 +1214,11 @@ class rating_manager {
             $scalearray = null;
             $aggregatetoreturn = round($firstrating->aggregate, 1);
 
-            // Output a dash if aggregation method == COUNT as the count is output next to the aggregate anyway.
-            if ($firstrating->settings->aggregationmethod == RATING_AGGREGATE_COUNT or $firstrating->count == 0) {
+            // Don't output an aggregate value if the user interface is toggle button.
+            if ($firstrating->settings->ui == RATING_UI_BUTTON) {
+                $aggregatetoreturn = '';
+                // Output a dash if aggregation method == COUNT as the count is output next to the aggregate anyway.
+            } else if ($firstrating->settings->aggregationmethod == RATING_AGGREGATE_COUNT or $firstrating->count == 0) {
                 $aggregatetoreturn = ' - ';
             } else if ($firstrating->settings->scale->id < 0) { // If its non-numeric scale.
                 // Dont use the scale item if the aggregation method is sum as adding items from a custom scale makes no sense.
@@ -1171,6 +1234,13 @@ class rating_manager {
             $result->aggregate = $aggregatetoreturn;
             $result->count = $firstrating->count;
             $result->itemid = $itemid;
+        }
+
+        if ($firstrating->settings->ui == RATING_UI_BUTTON) {
+            $result->ui = 'button';
+            $result->itemid = $itemid;
+            $result->strtoggleon = get_string('toggleratingon', 'rating', $firstrating->settings->scale->scaleitems[1]);
+            $result->strtoggleoff = get_string('toggleratingoff', 'rating', $firstrating->settings->scale->scaleitems[1]);
         }
         return $result;
     }

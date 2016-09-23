@@ -37,6 +37,7 @@ $itemid            = required_param('itemid', PARAM_INT);
 $scaleid           = required_param('scaleid', PARAM_INT);
 $userrating        = required_param('rating', PARAM_INT);
 $rateduserid       = required_param('rateduserid', PARAM_INT); // The user being rated. Required to update their grade.
+$ui                = optional_param('ui', RATING_UI_SELECT, PARAM_INT); // The user interface to display (select list or button).
 $aggregationmethod = optional_param('aggregation', RATING_AGGREGATE_NONE, PARAM_INT); // Used to calculate the aggregate to return.
 
 $result = new stdClass;
@@ -63,7 +64,8 @@ if (!confirm_sesskey() || !has_capability('moodle/rating:rate', $context)) {
 }
 
 $rm = new rating_manager();
-$result = $rm->add_rating($cm, $context, $component, $ratingarea, $itemid, $scaleid, $userrating, $rateduserid, $aggregationmethod);
+$result = $rm->add_rating($cm, $context, $component, $ratingarea, $itemid, $scaleid, $userrating, $rateduserid, $ui,
+        $aggregationmethod);
 
 // Return translated error.
 if (!empty($result->error)) {
