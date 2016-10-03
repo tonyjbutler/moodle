@@ -704,6 +704,9 @@ class assign {
         if (!empty($formdata->maxattempts)) {
             $update->maxattempts = $formdata->maxattempts;
         }
+        if (isset($formdata->preventlateresubmissions)) {
+            $update->preventlateresubmissions = $formdata->preventlateresubmissions;
+        }
         if (isset($formdata->preventsubmissionnotingroup)) {
             $update->preventsubmissionnotingroup = $formdata->preventsubmissionnotingroup;
         }
@@ -1447,6 +1450,9 @@ class assign {
         }
         if (!empty($formdata->maxattempts)) {
             $update->maxattempts = $formdata->maxattempts;
+        }
+        if (isset($formdata->preventlateresubmissions)) {
+            $update->preventlateresubmissions = $formdata->preventlateresubmissions;
         }
         if (isset($formdata->preventsubmissionnotingroup)) {
             $update->preventsubmissionnotingroup = $formdata->preventsubmissionnotingroup;
@@ -3988,6 +3994,7 @@ class assign {
                                                                      '',
                                                                      $instance->attemptreopenmethod,
                                                                      $instance->maxattempts,
+                                                                     $instance->preventlateresubmissions,
                                                                      $this->get_grading_status($userid),
                                                                      $instance->preventsubmissionnotingroup,
                                                                      $usergroups);
@@ -4182,6 +4189,7 @@ class assign {
                                                              '',
                                                              $instance->attemptreopenmethod,
                                                              $instance->maxattempts,
+                                                             $instance->preventlateresubmissions,
                                                              $this->get_grading_status($userid),
                                                              $instance->preventsubmissionnotingroup,
                                                              $usergroups);
@@ -5229,6 +5237,7 @@ class assign {
                                                           $gradingcontrollerpreview,
                                                           $instance->attemptreopenmethod,
                                                           $instance->maxattempts,
+                                                          $instance->preventlateresubmissions,
                                                           $gradingstatus,
                                                           $instance->preventsubmissionnotingroup,
                                                           $usergroups);
@@ -5982,6 +5991,28 @@ class assign {
                 // Drafts are tracked and the student has submitted the assignment.
                 return false;
             }
+
+            if (!$duedate = $this->get_instance()->duedate) {
+                $duedate = false;
+            }
+
+            // Prevent resubmissions after the due date unless an extension has been granted.
+            if ($duedate && $this->get_instance()->preventlateresubmissions) {
+                $submitted = $submission->status == ASSIGN_SUBMISSION_STATUS_SUBMITTED;
+                $overdue = $duedate < $time;
+
+                // ... but allow users with the 'editothersubmission' capability to edit submissions any time.
+                if (has_capability('mod/assign:editothersubmission', $this->context)) {
+                    $extension = true;
+                } else {
+                    $extension = $flags && $flags->extensionduedate && $flags->extensionduedate > $time;
+                }
+
+                if ($submitted && $overdue && !$extension) {
+                    return false;
+                }
+            }
+
         }
 
         // See if this user grade is locked in the gradebook.

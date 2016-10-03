@@ -133,6 +133,10 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->addHelpButton('maxattempts', 'maxattempts', 'assign');
         $mform->hideIf('maxattempts', 'attemptreopenmethod', 'eq', ASSIGN_ATTEMPT_REOPEN_METHOD_NONE);
 
+        $name = get_string('preventlateresubmissions', 'assign');
+        $mform->addElement('selectyesno', 'preventlateresubmissions', $name);
+        $mform->addHelpButton('preventlateresubmissions', 'preventlateresubmissions', 'assign');
+
         $mform->addElement('header', 'groupsubmissionsettings', get_string('groupsubmissionsettings', 'assign'));
 
         $name = get_string('teamsubmission', 'assign');

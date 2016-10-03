@@ -379,6 +379,7 @@ class mod_assign_external extends external_api {
                      'm.revealidentities, ' .
                      'm.attemptreopenmethod, '.
                      'm.maxattempts, ' .
+                     'm.preventlateresubmissions, ' .
                      'm.markingworkflow, ' .
                      'm.markingallocation, ' .
                      'm.requiresubmissionstatement, '.
@@ -453,6 +454,7 @@ class mod_assign_external extends external_api {
                         'revealidentities' => $module->revealidentities,
                         'attemptreopenmethod' => $module->attemptreopenmethod,
                         'maxattempts' => $module->maxattempts,
+                        'preventlateresubmissions' => $module->preventlateresubmissions,
                         'markingworkflow' => $module->markingworkflow,
                         'markingallocation' => $module->markingallocation,
                         'requiresubmissionstatement' => $module->requiresubmissionstatement,
@@ -548,6 +550,7 @@ class mod_assign_external extends external_api {
                 'revealidentities' => new external_value(PARAM_INT, 'show identities for a blind marking assignment'),
                 'attemptreopenmethod' => new external_value(PARAM_TEXT, 'method used to control opening new attempts'),
                 'maxattempts' => new external_value(PARAM_INT, 'maximum number of attempts allowed'),
+                'preventlateresubmissions' => new external_value(PARAM_INT, 'prevent submission changes after due date'),
                 'markingworkflow' => new external_value(PARAM_INT, 'enable marking workflow'),
                 'markingallocation' => new external_value(PARAM_INT, 'enable marking allocation'),
                 'requiresubmissionstatement' => new external_value(PARAM_INT, 'student must accept submission statement'),

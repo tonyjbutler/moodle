@@ -47,6 +47,7 @@ class mod_assign_generator extends testing_module_generator {
             'blindmarking'                      => 0,
             'attemptreopenmethod'               => 'none',
             'maxattempts'                       => -1,
+            'preventlateresubmissions'          => 0,
             'markingworkflow'                   => 0,
             'markingallocation'                 => 0,
         );
