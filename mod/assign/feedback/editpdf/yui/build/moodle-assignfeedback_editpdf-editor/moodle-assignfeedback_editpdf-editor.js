@@ -2286,17 +2286,25 @@ Y.extend(COMMENTSEARCH, M.core.dialogue, {
         e.preventDefault();
         var target = e.target.ancestor('li'),
             comment = target.getData('comment'),
-            editor = this.get('editor');
+            editor = comment.editor,
+            comments,
+            i;
 
         this.hide();
 
-        if (comment.pageno === editor.currentpage) {
-            comment.drawable.nodes[0].one('textarea').focus();
-        } else {
+        comment.pageno = comment.clean().pageno;
+        if (comment.pageno !== editor.currentpage) {
             // Comment is on a different page.
             editor.currentpage = comment.pageno;
             editor.change_page();
-            comment.drawable.nodes[0].one('textarea').focus();
+        }
+
+        comments = editor.pages[editor.currentpage].comments;
+        for (i = 0; i < comments.length; i++) {
+            if (comments[i].x === comment.x && comments[i].y === comment.y) {
+                comments[i].drawable.nodes[0].one('textarea').focus();
+                break;
+            }
         }
     },
 
@@ -2507,7 +2515,7 @@ var COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             y : parseInt(this.y, 10),
             width : parseInt(this.width, 10),
             rawtext : this.rawtext,
-            pageno : this.currentpage,
+            pageno: parseInt(this.pageno, 10),
             colour : this.colour
         };
     };

@@ -145,7 +145,7 @@ var COMMENT = function(editor, gradeid, pageno, x, y, width, colour, rawtext) {
             y : parseInt(this.y, 10),
             width : parseInt(this.width, 10),
             rawtext : this.rawtext,
-            pageno : this.currentpage,
+            pageno: parseInt(this.pageno, 10),
             colour : this.colour
         };
     };
