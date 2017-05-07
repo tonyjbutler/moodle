@@ -332,7 +332,7 @@ class icon_system_fontawesome extends icon_system_font {
             'core:t/emailno' => 'fa-ban',
             'core:t/email' => 'fa-envelope-o',
             'core:t/enrolusers' => 'fa-user-plus',
-            'core:t/expanded' => 'fa-caret-down',
+            'core:t/expanded' => 'fa-minus-square',
             'core:t/go' => 'fa-play',
             'core:t/grades' => 'fa-graduation-cap',
             'core:t/groupn' => 'fa-user',
