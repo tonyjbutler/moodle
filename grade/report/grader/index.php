@@ -164,7 +164,7 @@ $url = new moodle_url('/grade/report/grader/index.php', array('id' => $course->i
 $firstinitial = isset($SESSION->gradereport['filterfirstname']) ? $SESSION->gradereport['filterfirstname'] : '';
 $lastinitial  = isset($SESSION->gradereport['filtersurname']) ? $SESSION->gradereport['filtersurname'] : '';
 $totalusers = $report->get_numusers(true, false);
-$renderer = $PAGE->get_renderer('core_user');
+$renderer = $PAGE->get_renderer('core', 'user');
 echo $renderer->user_search($url, $firstinitial, $lastinitial, $numusers, $totalusers, $report->currentgroupname);
 
 //show warnings if any
