@@ -282,7 +282,7 @@ class core_user_renderer extends plugin_renderer_base {
      * @param array $filteroptions The filter options.
      * @return array The formatted options with the ['filtertype:value' => 'criteria: label'] format.
      */
-    private function handle_missing_applied_filters($filtersapplied, $filteroptions) {
+    protected function handle_missing_applied_filters($filtersapplied, $filteroptions) {
         global $DB;
 
         foreach ($filtersapplied as $filter) {
