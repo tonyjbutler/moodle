@@ -831,9 +831,14 @@ abstract class format_section_renderer_base extends plugin_renderer_base {
         global $PAGE;
 
         $modinfo = get_fast_modinfo($course);
-        $course = course_get_format($course)->get_course();
-
+        $format = course_get_format($course);
+        $course = $format->get_course();
+        $options = $format->get_format_options();
+        $supportsnumsections = array_key_exists('numsections', $options);
         $context = context_course::instance($course->id);
+        $caninsertsections = $PAGE->user_is_editing() && !$supportsnumsections &&
+                has_capability('moodle/course:movesections', $context);
+
         // Title with completion help icon.
         $completioninfo = new completion_info($course);
         echo $completioninfo->display_help_icon();
@@ -854,6 +859,9 @@ abstract class format_section_renderer_base extends plugin_renderer_base {
                     echo $this->courserenderer->course_section_cm_list($course, $thissection, 0);
                     echo $this->courserenderer->course_section_add_cm_control($course, 0, 0);
                     echo $this->section_footer();
+                    if ($caninsertsections) {
+                        echo $this->change_number_sections($course, 1, 1);
+                    }
                 }
                 continue;
             }
@@ -881,6 +889,9 @@ abstract class format_section_renderer_base extends plugin_renderer_base {
                     echo $this->courserenderer->course_section_add_cm_control($course, $section, 0);
                 }
                 echo $this->section_footer();
+                if ($caninsertsections) {
+                    echo $this->change_number_sections($course, $section + 1, $section + 1);
+                }
             }
         }
 
@@ -898,7 +909,9 @@ abstract class format_section_renderer_base extends plugin_renderer_base {
 
             echo $this->end_section_list();
 
-            echo $this->change_number_sections($course, 0);
+            if (!$caninsertsections) {
+                echo $this->change_number_sections($course, 0, 0);
+            }
         } else {
             echo $this->end_section_list();
         }
@@ -907,12 +920,14 @@ abstract class format_section_renderer_base extends plugin_renderer_base {
 
     /**
      * Returns controls in the bottom of the page to increase/decrease number of sections
+     * (or optionally at the bottom of any section, to insert new sections after it)
      *
      * @param stdClass $course
      * @param int|null $sectionreturn
+     * @param int $insertsection Insert sections at position; 0 means at the end.
      * @return string
      */
-    protected function change_number_sections($course, $sectionreturn = null) {
+    protected function change_number_sections($course, $sectionreturn = null, $insertsection = 0) {
         $coursecontext = context_course::instance($course->id);
         if (!has_capability('moodle/course:update', $coursecontext)) {
             return '';
@@ -964,18 +979,28 @@ abstract class format_section_renderer_base extends plugin_renderer_base {
             // Display the "Add section" link that will insert a section in the end.
             // Note to course format developers: inserting sections in the other positions should check both
             // capabilities 'moodle/course:update' and 'moodle/course:movesections'.
-            echo html_writer::start_tag('div', array('id' => 'changenumsections', 'class' => 'mdl-right'));
+            $class = 'changenumsections mdl-right';
+            if (!empty($insertsection)) {
+                $class .= ' card-header bg-white';
+                // Just in case capability wasn't checked before call.
+                if (!has_capability('moodle/course:movesections', $coursecontext)) {
+                    debugging('Capability "moodle/course:movesections" required to insert sections between other sections');
+                    $sectionreturn = 0;
+                    $insertsection = 0;
+                }
+            }
+            echo html_writer::start_tag('div', array('class' => $class));
             if (get_string_manager()->string_exists('addsections', 'format_'.$course->format)) {
                 $straddsections = get_string('addsections', 'format_'.$course->format);
             } else {
                 $straddsections = get_string('addsections');
             }
             $url = new moodle_url('/course/changenumsections.php',
-                ['courseid' => $course->id, 'insertsection' => 0, 'sesskey' => sesskey()]);
+                ['courseid' => $course->id, 'insertsection' => $insertsection, 'sesskey' => sesskey()]);
             if ($sectionreturn !== null) {
                 $url->param('sectionreturn', $sectionreturn);
             }
-            $icon = $this->output->pix_icon('t/add', '');
+            $icon = $this->output->pix_icon('i/addblock', '');
             $newsections = $maxsections - $lastsection;
             echo html_writer::link($url, $icon . $straddsections,
                 array('class' => 'add-sections', 'data-add-sections' => $straddsections, 'new-sections' => $newsections));

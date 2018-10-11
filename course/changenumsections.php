@@ -100,8 +100,7 @@ if (isset($courseformatoptions['numsections']) && $increase !== null) {
         $sections[] = course_create_section($course, $insertsection);
     }
     if (!$returnurl) {
-        $returnurl = course_get_url($course, $sections[0]->section,
-            ($sectionreturn !== null) ? ['sr' => $sectionreturn] : []);
+        $returnurl = course_get_url($course, ($sectionreturn !== null) ? $sectionreturn : $sections[0]->section);
     }
 }
 
