@@ -8696,8 +8696,12 @@ class assign {
                 break;
             case ASSIGN_ATTEMPT_REOPEN_METHOD_UNTILPASS:
                 // Check the gradetopass from the gradebook.
-                $gradeitem = $this->get_grade_item();
-                if ($gradeitem) {
+                try {
+                    $gradeitem = $this->get_grade_item();
+                } catch (coding_exception $e) {
+                    debugging($e->getMessage(), DEBUG_DEVELOPER);
+                }
+                if (!empty($gradeitem)) {
                     $gradegrade = grade_grade::fetch(['userid' => $userid, 'itemid' => $gradeitem->id]);
 
                     // Do not reopen if is_passed returns null, e.g. if there is no pass criterion set.
